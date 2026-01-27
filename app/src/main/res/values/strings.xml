@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Pexels App</string>
+    <string name="no_more_values">Nothing more to show(</string>
+    <string-array name="photo_categories">
+        <item>Nature</item>
+        <item>City</item>
+        <item>Ocean</item>
+    </string-array>
 </resources>

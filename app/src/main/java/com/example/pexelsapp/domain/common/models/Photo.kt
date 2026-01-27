@@ -6,5 +6,6 @@ data class Photo(
     val height: Int,
     val photographer: String,
     val description: String,
-    val avgColor: String
+    val avgColor: String,
+    val source: PhotoSource
 )
