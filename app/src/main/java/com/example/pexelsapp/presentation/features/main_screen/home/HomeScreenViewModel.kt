@@ -34,7 +34,7 @@ class HomeScreenViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    private val categories = when (val res = getCategoriesUseCase()) {
+    val categories = when (val res = getCategoriesUseCase()) {
         is Outcome.Success -> res.value
         is Outcome.Error -> emptyList()
     }
@@ -87,6 +87,7 @@ class HomeScreenViewModel @Inject constructor(
         _uiState.value = HomeUiState.Loading
         executeLoad()
     }
+
 
     private fun executeLoad(){
         val query = _searchQuery.value
