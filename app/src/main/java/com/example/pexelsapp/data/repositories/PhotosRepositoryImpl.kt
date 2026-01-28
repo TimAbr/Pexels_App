@@ -6,8 +6,10 @@ import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.domain.common.repositories.PhotosRepository
 import com.example.pexelsapp.domain.common.repositories.PhotosRepositoryError
 import com.example.pexelsapp.utils.models.Outcome
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import java.io.IOException
 
 class PhotosRepositoryImpl constructor(
@@ -57,7 +59,7 @@ class PhotosRepositoryImpl constructor(
         } catch (e: Exception) {
             emit(Outcome.Error(PhotosRepositoryError.UNKNOWN))
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getPhotosByQuery(
         query: String,
@@ -79,7 +81,7 @@ class PhotosRepositoryImpl constructor(
         } catch (e: Exception) {
             emit(Outcome.Error(PhotosRepositoryError.UNKNOWN))
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     private fun mapResponseError(code: Int): PhotosRepositoryError {
         return when (code) {

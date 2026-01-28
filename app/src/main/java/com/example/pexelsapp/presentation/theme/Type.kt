@@ -1,4 +1,4 @@
-package com.example.pexelsapp.ui.theme
+package com.example.pexelsapp.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

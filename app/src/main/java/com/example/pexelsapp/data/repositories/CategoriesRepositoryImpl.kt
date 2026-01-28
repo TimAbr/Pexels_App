@@ -3,7 +3,7 @@ package com.example.pexelsapp.data.repositories
 import android.content.Context
 import android.content.res.Resources
 import com.example.pexelsapp.R
-import com.example.pexelsapp.domain.common.models.Category
+import com.example.pexelsapp.domain.features.home.models.Category
 import com.example.pexelsapp.domain.features.home.repositories.CategoriesRepository
 import com.example.pexelsapp.domain.features.home.repositories.CategoriesRepositoryError
 import com.example.pexelsapp.utils.models.Outcome
