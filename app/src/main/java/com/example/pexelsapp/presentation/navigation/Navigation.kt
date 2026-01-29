@@ -16,7 +16,7 @@ sealed class RootGraph {
     @Serializable
     object Main : RootGraph()
     @Serializable
-    data class Details(val photo: Photo) : RootGraph()
+    data class Details(val photoId: Long) : RootGraph()
 }
 
 @Serializable
@@ -41,7 +41,7 @@ fun RootNavigation() {
 
         composable<RootGraph.Details> { backStackEntry ->
             val details: RootGraph.Details = backStackEntry.toRoute()
-            DetailsScreen(photoId = details.photo, onBack = {
+            DetailsScreen(photoId = details.photoId, onBack = {
                 rootNavController.popBackStack()
             })
         }

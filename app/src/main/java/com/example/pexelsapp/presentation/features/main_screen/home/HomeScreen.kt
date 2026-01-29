@@ -23,10 +23,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -63,6 +65,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
@@ -72,13 +75,13 @@ import com.example.pexelsapp.domain.features.home.models.Category
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeScreenViewModel,
-    onPhotoClick: (Int) -> Unit // Переход на детали [cite: 72]
+    viewModel: HomeScreenViewModel = hiltViewModel(),
+    onPhotoClick: (Photo) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
-    val categories = viewModel.categories // Список 7 категорий [cite: 47]
+    val categories = viewModel.categories
 
     Column(
         modifier = modifier
@@ -200,10 +203,10 @@ fun HomeSearchBar(
 fun PhotoGrid(
     photos: List<Photo>,
     isPaginationLoading: Boolean,
-    onPhotoClick: (Int) -> Unit,
+    onPhotoClick: (Photo) -> Unit,
     onLoadMore: () -> Unit
 ) {
-    val listState = rememberLazyGridState()
+    val listState = rememberLazyStaggeredGridState()
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
@@ -214,22 +217,23 @@ fun PhotoGrid(
             }
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(2),
         state = listState,
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalItemSpacing = 16.dp,
+        modifier = Modifier.fillMaxSize()
     ) {
         items(photos) { photo ->
             PhotoCard(
                 photo = photo,
-                onClick = { onPhotoClick(photo.id) }
+                onClick = { onPhotoClick(photo) }
             )
         }
 
         if (isPaginationLoading) {
-            item(span = { GridItemSpan(2) }) {
+            item(span = StaggeredGridItemSpan.FullLine) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(30.dp).padding(16.dp)
                 )
@@ -247,13 +251,24 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
         label = "photo_fade_in"
     )
 
+    val aspectRatio = photo.width.toFloat() / photo.height.toFloat()
+
     Card(
         modifier = Modifier
-            .clickable(onClick = onClick)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+            .fillMaxWidth()
+            .aspectRatio(aspectRatio)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
     ) {
 
+        if (!isImageLoaded) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_photo_placeholder),
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth(0.33f),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         AsyncImage(
             model = photo.source.original,
@@ -261,8 +276,7 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
             contentScale = ContentScale.FillWidth,
             modifier = Modifier.fillMaxWidth()
                 .graphicsLayer(alpha = alpha),
-            onSuccess = { isImageLoaded = true },
-            placeholder = painterResource(R.drawable.placeholder)
+            onSuccess = { isImageLoaded = true }
         )
     }
 }

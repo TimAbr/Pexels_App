@@ -5,8 +5,9 @@ import com.example.pexelsapp.domain.common.repositories.PhotosRepository
 import com.example.pexelsapp.domain.common.repositories.PhotosRepositoryError
 import com.example.pexelsapp.utils.models.Outcome
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class GetCuratedPhotosUseCase (
+class GetCuratedPhotosUseCase @Inject constructor(
     private val repository: PhotosRepository
 ) {
     operator fun invoke(

@@ -7,8 +7,9 @@ import com.example.pexelsapp.domain.features.home.models.Category
 import com.example.pexelsapp.utils.models.Outcome
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import javax.inject.Inject
 
-class GetPhotosByCategoryUseCase (
+class GetPhotosByCategoryUseCase @Inject constructor(
     private val repository: PhotosRepository
 ) {
     operator fun invoke(

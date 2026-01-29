@@ -1,8 +1,9 @@
 [versions]
 agp = "8.13.2"
-coilCompose = "3.3.0"
+coilCompose = "3.0.4"
+hiltExtensions = "1.4.0"
 hiltNavigationCompose = "1.3.0"
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -10,12 +11,12 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.2"
 composeBom = "2024.09.00"
-serialization = "1.10.0"
-retrofit = "3.0.0"
-okhttp = "5.3.2"
+serialization = "1.7.3"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
 navigationCompose = "2.9.6"
-hilt = "2.58"
-ksp = "2.3.4"
+hilt = "2.54"
+ksp = "2.1.0-1.0.29"
 roomKtx = "2.8.4"
 foundation = "1.10.1"
 animationCore = "1.10.1"
@@ -26,6 +27,8 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
+hilt-extensions = { module = "it.czerwinski.android.hilt:hilt-extensions", version.ref = "hiltExtensions" }
+hilt-processor-ksp = { module = "it.czerwinski.android.hilt:hilt-processor-ksp", version.ref = "hiltExtensions" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

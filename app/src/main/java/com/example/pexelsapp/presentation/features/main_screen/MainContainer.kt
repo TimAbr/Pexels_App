@@ -32,6 +32,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pexelsapp.presentation.features.main_screen.bookmarks.BookmarksScreen
+import com.example.pexelsapp.presentation.features.main_screen.home.HomeScreen
 import com.example.pexelsapp.presentation.navigation.MainNav
 import com.example.pexelsapp.presentation.navigation.RootGraph
 
@@ -52,14 +54,14 @@ fun MainContainer(rootNavController: NavController) {
             composable<MainNav.Home> {
                 HomeScreen(
                     onPhotoClick = { photo ->
-                        rootNavController.navigate(RootGraph.Details(photo))
+                        rootNavController.navigate(RootGraph.Details(photo.id))
                     }
                 )
             }
             composable<MainNav.Bookmarks> {
                 BookmarksScreen(
-                    onPhotoClick = { id ->
-                        rootNavController.navigate(RootGraph.Details(id))
+                    onPhotoClick = { photo ->
+                        rootNavController.navigate(RootGraph.Details(photo.id))
                     }
                 )
             }

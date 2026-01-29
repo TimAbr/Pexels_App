@@ -3,8 +3,9 @@ package com.example.pexelsapp.data.datasources.photos.remote
 import com.example.pexelsapp.data.models.PhotoDto
 import com.example.pexelsapp.data.models.PhotosResponseDto
 import retrofit2.Response
+import javax.inject.Inject
 
-class RemotePhotosSource(
+class RemotePhotosSource @Inject constructor(
     private val api: PexelsApi
 ) {
     suspend fun getCuratedPhotos(page: Int, perPage: Int): Response<PhotosResponseDto> {
