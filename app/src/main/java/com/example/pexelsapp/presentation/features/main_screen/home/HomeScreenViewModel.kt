@@ -184,16 +184,15 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    // ПУНКТ 1: При выборе категории сбрасываем стейт в Loading
     fun selectCategoryByIndex(index: Int) {
         if (index !in categories.indices) return
         val newSelection = SelectedCategory.Category(index)
 
         if (_selectedCategory.value != newSelection) {
             _selectedCategory.value = newSelection
-            _uiState.value = HomeUiState.Loading // Очищаем экран и показываем спиннер
-            resetPagination()
             if (_searchQuery.value.isBlank()) {
+                _uiState.value = HomeUiState.Loading
+                resetPagination()
                 loadPhotosForSelectedCategory()
             }
         }
@@ -202,9 +201,9 @@ class HomeScreenViewModel @Inject constructor(
     fun selectCurated() {
         if (_selectedCategory.value != SelectedCategory.Curated) {
             _selectedCategory.value = SelectedCategory.Curated
-            _uiState.value = HomeUiState.Loading
-            resetPagination()
             if (_searchQuery.value.isBlank()) {
+                _uiState.value = HomeUiState.Loading
+                resetPagination()
                 loadCuratedPhotos()
             }
         }

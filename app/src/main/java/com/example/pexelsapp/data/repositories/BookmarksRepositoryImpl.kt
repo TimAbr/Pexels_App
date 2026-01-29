@@ -1,5 +1,6 @@
 package com.example.pexelsapp.data.repositories
 
+import android.util.Log
 import com.example.pexelsapp.data.datasources.bookmarks.local.SavedPhotosDao
 import com.example.pexelsapp.data.mappers.PhotoDboMapper
 import com.example.pexelsapp.domain.common.models.Photo
@@ -14,7 +15,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 @BoundTo(supertype = BookmarksRepository::class, component = SingletonComponent::class)
 class BookmarksRepositoryImpl @Inject constructor(
     private val dao: SavedPhotosDao,
