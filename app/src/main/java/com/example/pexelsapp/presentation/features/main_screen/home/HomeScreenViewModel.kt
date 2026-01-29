@@ -44,13 +44,11 @@ class HomeScreenViewModel @Inject constructor(
     val selectedCategory = _selectedCategory.asStateFlow()
 
     private var currentJob: Job? = null
-
     private var currentPage = 1
     private var isLastPage = false
 
     init {
         observeSearchQuery()
-        resetPagination()
         loadPhotosForSelectedCategory()
     }
 
@@ -60,6 +58,7 @@ class HomeScreenViewModel @Inject constructor(
                 .debounce(600L)
                 .collectLatest { query ->
                     resetPagination()
+                    _uiState.value = HomeUiState.Loading
                     if (query.isBlank()) {
                         loadPhotosForSelectedCategory()
                     } else {
@@ -83,15 +82,12 @@ class HomeScreenViewModel @Inject constructor(
         executeLoad()
     }
 
-    fun loadPage(){
-        _uiState.value = HomeUiState.Loading
+    fun retry() {
         executeLoad()
     }
 
-
-    private fun executeLoad(){
+    private fun executeLoad() {
         val query = _searchQuery.value
-
         if (query.isBlank()) {
             loadPhotosForSelectedCategory()
         } else {
@@ -101,29 +97,19 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun loadCuratedPhotos() {
         executePhotoRequest {
-            getCuratedPhotosUseCase(
-                page = currentPage,
-                perPage = PHOTOS_PER_PAGE)
+            getCuratedPhotosUseCase(page = currentPage, perPage = PHOTOS_PER_PAGE)
         }
     }
 
     private fun loadPhotosByCategory(category: Category) {
-        executePhotoRequest  {
-            getPhotosByCategoryUseCase(
-                category = category,
-                page = currentPage,
-                perPage = PHOTOS_PER_PAGE
-            )
+        executePhotoRequest {
+            getPhotosByCategoryUseCase(category = category, page = currentPage, perPage = PHOTOS_PER_PAGE)
         }
     }
 
     private fun searchPhotos(query: String) {
         executePhotoRequest {
-            getPhotosByQueryUseCase(
-                query = query,
-                page = currentPage,
-                perPage = PHOTOS_PER_PAGE
-            )
+            getPhotosByQueryUseCase(query = query, page = currentPage, perPage = PHOTOS_PER_PAGE)
         }
     }
 
@@ -135,8 +121,8 @@ class HomeScreenViewModel @Inject constructor(
             val currentState = _uiState.value
 
             if (currentState is HomeUiState.Content) {
-                _uiState.value = currentState.copy(isPaginationLoading = true)
-            } else {
+                _uiState.value = currentState.copy(isPaginationLoading = true, error = null)
+            } else if (currentState !is HomeUiState.Loading) {
                 _uiState.value = HomeUiState.Loading
             }
 
@@ -146,22 +132,31 @@ class HomeScreenViewModel @Inject constructor(
                         val newPhotos = outcome.value
                         isLastPage = newPhotos.size < PHOTOS_PER_PAGE
 
-                        if (_uiState.value is HomeUiState.Content) {
-                            val prev = _uiState.value as HomeUiState.Content
-                            _uiState.value = prev.copy(
-                                photos = prev.photos + newPhotos,
-                                isPaginationLoading = false
+                        val currentContent = _uiState.value as? HomeUiState.Content
+                        if (currentContent != null && currentPage > 1) {
+                            _uiState.value = currentContent.copy(
+                                photos = currentContent.photos + newPhotos,
+                                isPaginationLoading = false,
+                                error = null
                             )
                         } else {
                             if (newPhotos.isEmpty()) {
                                 _uiState.value = HomeUiState.Empty
                             } else {
-                                _uiState.value = HomeUiState.Content(photos = newPhotos)
+                                _uiState.value = HomeUiState.Content(
+                                    photos = newPhotos, error = null
+                                )
                             }
                         }
                     }
                     is Outcome.Error -> {
-                        _uiState.value = HomeUiState.Error(outcome.type)
+                        val currentContent = _uiState.value as? HomeUiState.Content
+                        if (currentContent != null) {
+                            _uiState.value = currentContent.copy(
+                                isPaginationLoading = false, error = outcome.type)
+                        } else {
+                            _uiState.value = HomeUiState.Error(outcome.type)
+                        }
                     }
                 }
             }
@@ -189,20 +184,29 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
+    // ПУНКТ 1: При выборе категории сбрасываем стейт в Loading
     fun selectCategoryByIndex(index: Int) {
         if (index !in categories.indices) return
-        _selectedCategory.value = SelectedCategory.Category(index)
-        resetPagination()
-        if (_searchQuery.value.isBlank()) {
-            loadPhotosForSelectedCategory()
+        val newSelection = SelectedCategory.Category(index)
+
+        if (_selectedCategory.value != newSelection) {
+            _selectedCategory.value = newSelection
+            _uiState.value = HomeUiState.Loading // Очищаем экран и показываем спиннер
+            resetPagination()
+            if (_searchQuery.value.isBlank()) {
+                loadPhotosForSelectedCategory()
+            }
         }
     }
 
     fun selectCurated() {
-        _selectedCategory.value = SelectedCategory.Curated
-        resetPagination()
-        if (_searchQuery.value.isBlank()) {
-            loadCuratedPhotos()
+        if (_selectedCategory.value != SelectedCategory.Curated) {
+            _selectedCategory.value = SelectedCategory.Curated
+            _uiState.value = HomeUiState.Loading
+            resetPagination()
+            if (_searchQuery.value.isBlank()) {
+                loadCuratedPhotos()
+            }
         }
     }
 
@@ -223,6 +227,7 @@ sealed class HomeUiState {
     data class Error(val error: PhotosRepositoryError?) : HomeUiState()
     data class Content(
         val photos: List<Photo>,
-        val isPaginationLoading: Boolean = false
+        val isPaginationLoading: Boolean = false,
+        val error: PhotosRepositoryError? = null
     ) : HomeUiState()
 }
