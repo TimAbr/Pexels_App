@@ -16,7 +16,7 @@ class RemotePhotosSource @Inject constructor(
         return api.getPhotosByQuery(query, page, perPage)
     }
 
-    suspend fun getPhoto(id: Int): Response<PhotoDto> {
-        return api.getPhoto(id)
+    suspend fun getPhoto(id: Long): Response<PhotoDto> {
+        return api.getPhoto(Long)
     }
 }

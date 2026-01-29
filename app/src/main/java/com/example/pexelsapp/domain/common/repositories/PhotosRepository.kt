@@ -5,7 +5,7 @@ import com.example.pexelsapp.utils.models.Outcome
 import kotlinx.coroutines.flow.Flow
 
 interface PhotosRepository{
-    suspend fun getPhoto(photoId: Int): Outcome<Photo, PhotosRepositoryError>
+    suspend fun getPhoto(photoId: Long): Outcome<Photo, PhotosRepositoryError>
 
     fun getCuratedPhotos(
         page: Int,

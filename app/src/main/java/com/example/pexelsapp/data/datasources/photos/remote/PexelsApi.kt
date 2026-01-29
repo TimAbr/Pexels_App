@@ -23,6 +23,6 @@ interface PexelsApi {
 
     @GET("v1/photos/{id}")
     suspend fun getPhoto(
-        @Path("id") id: Int
+        @Path("id") id: Long
     ): Response<PhotoDto>
 }

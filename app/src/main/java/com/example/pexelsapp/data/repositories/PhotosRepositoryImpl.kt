@@ -28,7 +28,7 @@ class PhotosRepositoryImpl @Inject constructor(
         const val TAG = "PhotosRepositoryImpl"
     }
 
-    override suspend fun getPhoto(photoId: Int): Outcome<Photo, PhotosRepositoryError> {
+    override suspend fun getPhoto(photoId: Long): Outcome<Photo, PhotosRepositoryError> {
         return try {
             val response = photosSource.getPhoto(photoId)
 
