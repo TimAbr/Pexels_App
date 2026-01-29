@@ -3,12 +3,15 @@ package com.example.pexelsapp.data.repositories
 import com.example.pexelsapp.data.datasources.bookmarks.local.SavedPhotosDao
 import com.example.pexelsapp.data.mappers.PhotoDboMapper
 import com.example.pexelsapp.domain.common.models.Photo
+import com.example.pexelsapp.domain.features.bookmarks.models.BookmarksEvent
 import com.example.pexelsapp.domain.features.bookmarks.repositories.BookmarksRepository
 import com.example.pexelsapp.domain.features.bookmarks.repositories.BookmarksRepositoryError
 import com.example.pexelsapp.utils.models.Outcome
 import dagger.hilt.components.SingletonComponent
 import it.czerwinski.android.hilt.annotations.BoundTo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -17,6 +20,9 @@ class BookmarksRepositoryImpl @Inject constructor(
     private val dao: SavedPhotosDao,
     private val photoDboMapper: PhotoDboMapper
 ) : BookmarksRepository {
+
+    private val _bookmarksEvents = MutableSharedFlow<BookmarksEvent>(extraBufferCapacity = 64)
+    override val bookmarksEvents = _bookmarksEvents.asSharedFlow()
 
     override fun getAllBookmarks(): Flow<List<Photo>> = flow {
         val photos = dao.getAllPhotos().map { photoDboMapper(it) }
@@ -39,6 +45,7 @@ class BookmarksRepositoryImpl @Inject constructor(
     override suspend fun savePhoto(photo: Photo): Outcome<Unit, BookmarksRepositoryError> {
         return try {
             dao.insertPhoto(photoDboMapper(photo))
+            _bookmarksEvents.tryEmit(BookmarksEvent.Added(photo))
             Outcome.Success(Unit)
         } catch (e: Exception) {
             Outcome.Error(BookmarksRepositoryError.UNKNOWN)
@@ -48,6 +55,7 @@ class BookmarksRepositoryImpl @Inject constructor(
     override suspend fun deletePhoto(photoId: Long): Outcome<Unit, BookmarksRepositoryError> {
         return try {
             dao.deletePhotoById(photoId)
+            _bookmarksEvents.tryEmit(BookmarksEvent.Deleted(photoId))
             Outcome.Success(Unit)
         } catch (e: Exception) {
             Outcome.Error(BookmarksRepositoryError.UNKNOWN)

@@ -1,6 +1,5 @@
 package com.example.pexelsapp.presentation.features.main_screen.home
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -29,7 +27,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,14 +35,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.domain.features.home.models.Category
+import com.example.pexelsapp.presentation.features.components.ScreenStub
+import com.example.pexelsapp.presentation.features.components.PhotoGrid
+import com.example.pexelsapp.presentation.features.components.PhotoGridShimmer
 
 
 @Composable
@@ -102,18 +100,21 @@ fun HomeScreen(
                         isPaginationLoading = state.isPaginationLoading,
                         onPhotoClick = onPhotoClick,
                         onLoadMore = viewModel::loadNextPage,
-                        error = state.error
+                        error = state.error,
+                        errorContent = {
+                            RetrySection(onRetry = viewModel::retry)
+                        }
                     )
                 }
                 is HomeUiState.Empty -> {
-                    HomeStub(
+                    ScreenStub(
                         text = stringResource(R.string.no_results_found),
                         buttonText = stringResource(R.string.explore),
                         onButtonClick = viewModel::retry
                     )
                 }
                 is HomeUiState.Error -> {
-                    HomeStub(
+                    ScreenStub(
                         text = stringResource(R.string.network_error),
                         buttonText = stringResource(R.string.try_again),
                         onButtonClick = viewModel::retry
@@ -249,44 +250,15 @@ fun CategoryChip(
     }
 }
 
-@Composable
-fun HomeStub(
-    text: String,
-    buttonText: String,
-    onButtonClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    @DrawableRes iconRes: Int? = null
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (iconRes != null) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
 
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextButton(onClick = onButtonClick) {
-            Text(
-                text = buttonText,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
+
+@Composable
+fun RetrySection(
+    onRetry: ()->Unit
+){
+    ScreenStub(
+        text = stringResource(R.string.network_error),
+        buttonText = stringResource(R.string.try_again),
+        onButtonClick = onRetry
+    )
 }

@@ -1,4 +1,4 @@
-package com.example.pexelsapp.presentation.features.main_screen.home
+package com.example.pexelsapp.presentation.features.components
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,15 +43,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
-import com.example.pexelsapp.domain.common.repositories.PhotosRepositoryError
+import com.example.pexelsapp.domain.common.models.PhotoSource
 
 @Composable
 fun PhotoGridShimmer() {
@@ -96,70 +100,72 @@ fun PhotoGridShimmer() {
 }
 
 @Composable
-fun PhotoGrid(
+fun <E> PhotoGrid(
     photos: List<Photo>,
     isPaginationLoading: Boolean,
-    error: PhotosRepositoryError?,
+    error: E?,
     onPhotoClick: (Photo) -> Unit,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    showAuthorNames: Boolean = false,
+    errorContent: @Composable (E) -> Unit = {},
+    emptyContent: @Composable () -> Unit = {}
 ) {
-    val listState = rememberLazyStaggeredGridState()
+    if (photos.isEmpty() && !isPaginationLoading && error == null) {
+        emptyContent()
+    } else {
 
-    if (error == null) {
-        LaunchedEffect(listState) {
-            snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
-                .collect { lastIndex ->
-                    if (lastIndex != null && lastIndex >= photos.size - 5) {
-                        onLoadMore()
+        val listState = rememberLazyStaggeredGridState()
+
+        if (error == null) {
+            LaunchedEffect(listState) {
+                snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                    .collect { lastIndex ->
+                        if (lastIndex != null && lastIndex >= photos.size - 5) {
+                            onLoadMore()
+                        }
                     }
-                }
-        }
-    }
-
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2),
-        state = listState,
-        contentPadding = PaddingValues(24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalItemSpacing = 16.dp,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(photos) { photo ->
-            PhotoCard(
-                photo = photo,
-                onClick = { onPhotoClick(photo) }
-            )
+            }
         }
 
-        if (isPaginationLoading) {
-            item(span = StaggeredGridItemSpan.FullLine) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(30.dp).padding(16.dp)
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(2),
+            state = listState,
+            contentPadding = PaddingValues(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalItemSpacing = 16.dp,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(photos) { photo ->
+                PhotoCard(
+                    photo = photo,
+                    onClick = { onPhotoClick(photo) },
+                    showAuthorName = showAuthorNames
                 )
             }
-        }
 
-        if (error != null) {
-            item(span = StaggeredGridItemSpan.FullLine) {
-                RetrySection(onRetry = onLoadMore)
+            if (isPaginationLoading) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(30.dp).padding(16.dp)
+                    )
+                }
+            }
+
+            error?.let {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    errorContent(it)
+                }
             }
         }
     }
 }
 
 @Composable
-fun RetrySection(
-    onRetry: ()->Unit
-){
-    HomeStub(
-        text = stringResource(R.string.network_error),
-        buttonText = stringResource(R.string.try_again),
-        onButtonClick = onRetry
-    )
-}
-
-@Composable
-fun PhotoCard(photo: Photo, onClick: () -> Unit) {
+fun PhotoCard(
+    photo: Photo,
+    onClick: () -> Unit,
+    showAuthorName: Boolean = false
+) {
     var isImageLoaded by remember { mutableStateOf(false) }
     val alpha by animateFloatAsState(
         targetValue = if (isImageLoaded) 1f else 0f,
@@ -176,10 +182,18 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
             .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+
+            val density = LocalDensity.current
+
+            val imageUrl = remember(photo.source, maxWidth, density) {
+                val widthPx = with(density) { maxWidth.toPx() }
+                val heightPx = widthPx / aspectRatio
+                photo.source.getBestUrlForHeight(heightPx)
+            }
 
             if (!isImageLoaded) {
                 Icon(
@@ -191,13 +205,48 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
             }
 
             AsyncImage(
-                model = photo.source.original,
+                model = imageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier.fillMaxWidth()
                     .graphicsLayer(alpha = alpha),
                 onSuccess = { isImageLoaded = true }
             )
+
+            if (showAuthorName && isImageLoaded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = photo.photographer.name,
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+
         }
+    }
+}
+
+fun PhotoSource.getBestUrlForHeight(heightPx: Float): String {
+    return when {
+
+        heightPx <= 130f -> small
+
+        heightPx <= 200f -> tiny
+
+        heightPx <= 350f -> medium
+
+        heightPx <= 650f -> large
+
+        else -> original
     }
 }

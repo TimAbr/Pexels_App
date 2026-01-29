@@ -1,11 +1,15 @@
 package com.example.pexelsapp.domain.features.bookmarks.repositories
 
 import com.example.pexelsapp.domain.common.models.Photo
+import com.example.pexelsapp.domain.features.bookmarks.models.BookmarksEvent
 
 import com.example.pexelsapp.utils.models.Outcome
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 
 interface BookmarksRepository {
+
+    val bookmarksEvents: SharedFlow<BookmarksEvent>
 
     fun getAllBookmarks(): Flow<List<Photo>>
 

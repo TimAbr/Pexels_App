@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.animation.core)
+    implementation(libs.androidx.media3.exoplayer)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -90,4 +91,5 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.extensions)
     ksp(libs.hilt.processor.ksp)
+    ksp(libs.androidx.room.compiler)
 }
