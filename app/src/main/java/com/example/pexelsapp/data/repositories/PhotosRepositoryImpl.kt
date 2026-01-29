@@ -5,7 +5,6 @@ import com.example.pexelsapp.data.mappers.PhotoDtoMapper
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.domain.common.repositories.PhotosRepository
 import com.example.pexelsapp.domain.common.repositories.PhotosRepositoryError
-import com.example.pexelsapp.domain.features.home.repositories.CategoriesRepository
 import com.example.pexelsapp.utils.models.Outcome
 import dagger.hilt.components.SingletonComponent
 import it.czerwinski.android.hilt.annotations.BoundTo
@@ -16,12 +15,16 @@ import kotlinx.coroutines.flow.flowOn
 import java.io.IOException
 import javax.inject.Inject
 import android.util.Log
+import com.example.pexelsapp.data.datasources.bookmarks.local.SavedPhotosDao
+import com.example.pexelsapp.data.mappers.PhotoDboMapper
 
 
 @BoundTo(supertype = PhotosRepository::class, component = SingletonComponent::class)
 class PhotosRepositoryImpl @Inject constructor(
     private val photosSource: RemotePhotosSource,
-    private val photoDtoMapper: PhotoDtoMapper
+    private val photoDtoMapper: PhotoDtoMapper,
+    private val savedPhotosDao: SavedPhotosDao,
+    private val photoDboMapper: PhotoDboMapper
 ) : PhotosRepository {
 
     private companion object {
@@ -30,6 +33,11 @@ class PhotosRepositoryImpl @Inject constructor(
 
     override suspend fun getPhoto(photoId: Long): Outcome<Photo, PhotosRepositoryError> {
         return try {
+
+            savedPhotosDao.getPhotoById(photoId)?.let{
+                Outcome.Success(photoDboMapper(it))
+            }
+
             val response = photosSource.getPhoto(photoId)
 
             if (response.isSuccessful) {

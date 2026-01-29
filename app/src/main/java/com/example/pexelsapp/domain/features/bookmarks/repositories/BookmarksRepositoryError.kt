@@ -1,6 +1,6 @@
 package com.example.pexelsapp.domain.features.bookmarks.repositories
 
-enum class BookmarkRepositoryError {
+enum class BookmarksRepositoryError {
     UNKNOWN,
     NO_SUCH_BOOKMARK
 }

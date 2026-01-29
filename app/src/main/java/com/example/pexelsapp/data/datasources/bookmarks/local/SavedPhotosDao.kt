@@ -24,4 +24,14 @@ interface SavedPhotosDao {
 
     @Query("DELETE FROM saved_photos WHERE id = :photoId")
     suspend fun deletePhotoById(photoId: Long)
+
+    @Query("""
+        SELECT * FROM saved_photos 
+        ORDER BY added_at DESC 
+        LIMIT :limit OFFSET :offset
+    """)
+    suspend fun getPagedBookmarks(limit: Int, offset: Int): List<PhotoDbo>
+
+    @Query("SELECT * FROM saved_photos ORDER BY added_at DESC")
+    suspend fun getAllPhotos(): List<PhotoDbo>
 }

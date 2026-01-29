@@ -1,5 +1,6 @@
 package com.example.pexelsapp.data.models
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -16,6 +17,9 @@ data class PhotoDbo(
     val photographer: PhotographerDbo,
 
     @Embedded(prefix = "source_")
-    val source: PhotoSourceDbo
+    val source: PhotoSourceDbo,
+
+    @ColumnInfo(name = "added_at")
+    val addedAt: Long = System.currentTimeMillis()
 )
 
