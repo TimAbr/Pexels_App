@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -16,15 +17,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.presentation.features.components.ScreenStub
+import com.example.pexelsapp.presentation.features.components.getBestUrlForHeight
+import kotlin.compareTo
+import kotlin.times
 
 @Composable
 fun DetailsScreen(
@@ -116,30 +124,128 @@ fun PhotoContent(
     onBookmarkClick: () -> Unit,
     onDownloadClick: () -> Unit
 ) {
-    var scale by remember { mutableFloatStateOf(1f) }
-    val animatedScale by animateFloatAsState(
-        targetValue = scale,
-        label = "zoom_reset_anim"
-    )
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp, vertical = 24.dp)
     ) {
+        ZoomablePhotoCard(photo = photo, modifier = Modifier.weight(1f))
 
-        Box(
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .navigationBarsPadding()
+                .height(48.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable { onDownloadClick() },
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.round_file_download_24),
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "Download",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(1f)
+                    .clip(CircleShape)
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .clickable { onBookmarkClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(
+                        id = if (isBookmarked) R.drawable.bookmark_button_active
+                        else R.drawable.bookmark_button_inactive
+                    ),
+                    contentDescription = null,
+                    tint = if (isBookmarked) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ZoomablePhotoCard(
+    photo: Photo,
+    modifier: Modifier
+){
+    var scale by remember { mutableFloatStateOf(1f) }
+    val animatedScale by animateFloatAsState(
+        targetValue = scale,
+        label = "zoom_reset_anim"
+    )
+    var isImageLoaded by remember { mutableStateOf(false) }
+
+    val aspectRatio = photo.width.toFloat() / photo.height.toFloat()
+
+    Card(
+        modifier = modifier
+            .aspectRatio(aspectRatio)
+            .clip(MaterialTheme.shapes.large)
+    ){
+        Box(
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+
+            if (!isImageLoaded) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_photo_placeholder),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth(0.33f),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             AsyncImage(
-                model = photo.source.original,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(photo.source.original)
+                    .crossfade(600)
+                    .build(),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.large)
                     .graphicsLayer(
                         scaleX = animatedScale,
                         scaleY = animatedScale
@@ -157,65 +263,6 @@ fun PhotoContent(
                 contentScale = ContentScale.Fit
             )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onDownloadClick() },
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = CircleShape
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.round_file_download_24),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Download",
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isBookmarked) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                    .clickable { onBookmarkClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (isBookmarked) R.drawable.bookmark_button_active
-                        else R.drawable.bookmark_button_inactive
-                    ),
-                    contentDescription = null,
-                    tint = if (isBookmarked) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
     }
+
 }

@@ -46,14 +46,19 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.domain.common.models.PhotoSource
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun PhotoGridShimmer() {
@@ -68,11 +73,13 @@ fun PhotoGridShimmer() {
         label = "shimmer_rect"
     )
 
-    val shimmerColors = listOf(
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-    )
+    val shimmerColors = remember {
+        listOf(
+            Color.LightGray.copy(alpha = 0.6f),
+            Color.LightGray.copy(alpha = 0.2f),
+            Color.LightGray.copy(alpha = 0.6f),
+        )
+    }
 
     val brush = Brush.linearGradient(
         colors = shimmerColors,
@@ -119,6 +126,7 @@ fun <E> PhotoGrid(
         if (error == null) {
             LaunchedEffect(listState) {
                 snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                    .distinctUntilChanged()
                     .collect { lastIndex ->
                         if (lastIndex != null && lastIndex >= photos.size - 5) {
                             onLoadMore()
@@ -167,11 +175,6 @@ fun PhotoCard(
     showAuthorName: Boolean = false
 ) {
     var isImageLoaded by remember { mutableStateOf(false) }
-    val alpha by animateFloatAsState(
-        targetValue = if (isImageLoaded) 1f else 0f,
-        animationSpec = tween(durationMillis = 400),
-        label = "photo_fade_in"
-    )
 
     val aspectRatio = photo.width.toFloat() / photo.height.toFloat()
 
@@ -205,11 +208,13 @@ fun PhotoCard(
             }
 
             AsyncImage(
-                model = imageUrl,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(600)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
-                modifier = Modifier.fillMaxWidth()
-                    .graphicsLayer(alpha = alpha),
+                modifier = Modifier.fillMaxWidth(),
                 onSuccess = { isImageLoaded = true }
             )
 
@@ -218,15 +223,18 @@ fun PhotoCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.Black.copy(alpha = 0.5f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.CenterStart
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .align(Alignment.BottomCenter),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
                     Text(
                         text = photo.photographer.name,
                         color = Color.White,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Light
+                        ),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }

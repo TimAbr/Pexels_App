@@ -9,6 +9,7 @@
     <string name="explore">Reload</string>
     <string name="bookmarks_error">Error loading bookmarks</string>
     <string name="no_bookmarks">No bookmarks</string>
+    <string name="download_text">Download</string>
     <string-array name="photo_categories">
         <item>Nature</item>
         <item>City</item>

@@ -58,7 +58,8 @@ fun BookmarksScreen(
                         error = state.error,
                         errorContent = {
                             RetrySection(onRetry = viewModel::retry)
-                        }
+                        },
+                        showAuthorNames = true
                     )
 
                 }
