@@ -117,7 +117,8 @@ fun HomeScreen(
                     ScreenStub(
                         text = stringResource(R.string.network_error),
                         buttonText = stringResource(R.string.try_again),
-                        onButtonClick = viewModel::retry
+                        onButtonClick = viewModel::retry,
+                        iconRes = R.drawable.no_network_icon
                     )
                 }
                 else -> Unit

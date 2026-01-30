@@ -92,4 +92,5 @@ dependencies {
     implementation(libs.hilt.extensions)
     ksp(libs.hilt.processor.ksp)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.core.splashscreen)
 }

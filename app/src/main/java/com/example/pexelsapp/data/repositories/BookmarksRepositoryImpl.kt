@@ -1,6 +1,5 @@
 package com.example.pexelsapp.data.repositories
 
-import android.util.Log
 import com.example.pexelsapp.data.datasources.bookmarks.local.SavedPhotosDao
 import com.example.pexelsapp.data.mappers.PhotoDboMapper
 import com.example.pexelsapp.domain.common.models.Photo

@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.presentation.features.details_screen.DetailsScreen
 import com.example.pexelsapp.presentation.features.main_screen.MainContainer
 import kotlinx.serialization.Serializable
