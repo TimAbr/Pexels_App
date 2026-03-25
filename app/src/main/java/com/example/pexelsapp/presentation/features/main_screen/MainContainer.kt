@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -41,6 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pexelsapp.R
 import com.example.pexelsapp.presentation.features.main_screen.bookmarks.BookmarksScreen
 import com.example.pexelsapp.presentation.features.main_screen.home.HomeScreen
+import com.example.pexelsapp.presentation.features.main_screen.settings.SettingsScreen
 import com.example.pexelsapp.presentation.navigation.MainNav
 import com.example.pexelsapp.presentation.navigation.RootGraph
 
@@ -72,6 +72,9 @@ fun MainContainer(rootNavController: NavController) {
                     }
                 )
             }
+            composable<MainNav.Settings> {
+                SettingsScreen()
+            }
         }
     }
 }
@@ -80,7 +83,8 @@ fun MainContainer(rootNavController: NavController) {
 fun AppBottomNavigation(navController: NavController) {
     val items = listOf(
         NavigationItem.Home,
-        NavigationItem.Bookmarks
+        NavigationItem.Bookmarks,
+        NavigationItem.Settings
     )
 
     NavigationBar(
@@ -163,5 +167,11 @@ sealed class NavigationItem(
         route = MainNav.Bookmarks,
         getInactiveIcon = { ImageVector.vectorResource(R.drawable.bookmark_button_inactive) },
         getActiveIcon = { ImageVector.vectorResource(R.drawable.bookmark_button_active) }
+    )
+
+    object Settings : NavigationItem(
+        route = MainNav.Settings,
+        getInactiveIcon = { Icons.Default.Settings },
+        getActiveIcon = { Icons.Default.Settings }
     )
 }

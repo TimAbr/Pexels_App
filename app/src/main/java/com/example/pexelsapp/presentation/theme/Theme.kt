@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.example.pexelsapp.domain.features.config.models.AppTheme
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkRed,
@@ -34,11 +35,15 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun PexelsAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-
+    appTheme: AppTheme = AppTheme.System,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (appTheme) {
+        AppTheme.Light -> false
+        AppTheme.Dark -> true
+        AppTheme.System -> isSystemInDarkTheme()
+    }
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

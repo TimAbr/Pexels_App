@@ -2,6 +2,8 @@ package com.example.pexelsapp.presentation.navigation
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +26,8 @@ sealed class MainNav {
     object Home : MainNav()
     @Serializable
     object Bookmarks : MainNav()
+    @Serializable
+    object Settings : MainNav()
 }
 
 @Composable
