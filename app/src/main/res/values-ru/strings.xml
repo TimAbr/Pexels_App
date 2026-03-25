@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Pexels App</string>
+    <string name="no_more_values">Больше нечего показывать(</string>
+    <string name="search_hint">Поиск</string>
+    <string name="curated">Популярное</string>
+    <string name="try_again">Повторить</string>
+    <string name="network_error">Ошибка сети</string>
+    <string name="no_results_found">Ничего не найдено</string>
+    <string name="explore">Загрузить</string>
+    <string name="bookmarks_error">Ошибка загрузки закладок</string>
+    <string name="no_bookmarks">Вы еще ничего не сохранили</string>
+    <string name="download_text">Скачать</string>
+    <string name="download_button_text">Скачать</string>
+    <string-array name="photo_categories">
+        <item>Природа</item>
+        <item>Город</item>
+        <item>Океан</item>
+    </string-array>
+    
+    <string name="settings">Настройки</string>
+    <string name="language">Язык</string>
+    <string name="theme">Тема</string>
+    <string name="theme_choose">Выберите тему приложения</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_system">Системная</string>
+    <string name="lang_english">English</string>
+    <string name="lang_russian">Русский</string>
+    <string name="lang_system">Системный</string>
+</resources>
