@@ -35,7 +35,7 @@ class PhotosRepositoryImpl @Inject constructor(
         return try {
 
             savedPhotosDao.getPhotoById(photoId)?.let{
-                Outcome.Success(photoDboMapper(it))
+                return Outcome.Success(photoDboMapper(it))
             }
 
             val response = photosSource.getPhoto(photoId)
