@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.pexelsapp.domain.features.config.models.AppLanguage
 import com.example.pexelsapp.domain.features.config.models.AppTheme
-import com.example.pexelsapp.domain.features.config.models.displayName
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavController

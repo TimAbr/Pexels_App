@@ -19,7 +19,17 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideSavedPhotosDao(database: AppDatabase): SavedPhotosDao {
-        return database.photoDao()
+    fun providePhotosDao(database: AppDatabase): PhotosDao {
+        return database.photosDao()
+    }
+
+    @Provides
+    fun provideBookmarksDao(database: AppDatabase): BookmarksDao {
+        return database.bookmarksDao()
+    }
+
+    @Provides
+    fun provideCuratedCacheDao(database: AppDatabase): CuratedCacheDao {
+        return database.curatedCacheDao()
     }
 }

@@ -3,16 +3,14 @@ package com.example.pexelsapp.presentation.features.main_screen.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelsapp.domain.common.models.Photo
+import com.example.pexelsapp.domain.common.models.PhotoGroupType
 import com.example.pexelsapp.domain.common.repositories.PhotosRepositoryError
-import com.example.pexelsapp.domain.features.home.models.Category
+import com.example.pexelsapp.domain.features.home.usecases.GetCachedPhotosUseCase
+import com.example.pexelsapp.domain.features.home.usecases.GetPhotosUseCase
 import com.example.pexelsapp.domain.features.home.usecases.GetCategoriesUseCase
-import com.example.pexelsapp.domain.features.home.usecases.GetCuratedPhotosUseCase
-import com.example.pexelsapp.domain.features.home.usecases.GetPhotosByCategoryUseCase
-import com.example.pexelsapp.domain.features.home.usecases.GetPhotosByQueryUseCase
 import com.example.pexelsapp.utils.models.Outcome
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -22,9 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
-    private val getCuratedPhotosUseCase: GetCuratedPhotosUseCase,
-    private val getPhotosByQueryUseCase: GetPhotosByQueryUseCase,
-    private val getPhotosByCategoryUseCase: GetPhotosByCategoryUseCase,
+    private val getPhotosUseCase: GetPhotosUseCase,
+    private val getCachedPhotosUseCase: GetCachedPhotosUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase
 ) : ViewModel() {
 
@@ -39,17 +36,27 @@ class HomeScreenViewModel @Inject constructor(
         is Outcome.Error -> emptyList()
     }
 
-    private val _selectedCategory =
-        MutableStateFlow<SelectedCategory>(SelectedCategory.Curated)
+    private val _selectedCategory = MutableStateFlow<PhotoGroupType>(PhotoGroupType.Curated)
     val selectedCategory = _selectedCategory.asStateFlow()
+
+    private fun getActiveGroupType(): PhotoGroupType {
+        val query = _searchQuery.value
+        return if (query.isNotBlank()) PhotoGroupType.Query(query) else _selectedCategory.value
+    }
 
     private var currentJob: Job? = null
     private var currentPage = 1
     private var isLastPage = false
+    private var isNetworkFirstPageLoaded = false
+    private var isCacheLoaded = false
+
+    init {
+        loadPhotos()
+    }
+
 
     init {
         observeSearchQuery()
-        loadPhotosForSelectedCategory()
     }
 
     private fun observeSearchQuery() {
@@ -59,11 +66,7 @@ class HomeScreenViewModel @Inject constructor(
                 .collectLatest { query ->
                     resetPagination()
                     _uiState.value = HomeUiState.Loading
-                    if (query.isBlank()) {
-                        loadPhotosForSelectedCategory()
-                    } else {
-                        searchPhotos(query)
-                    }
+                    loadPhotos()
                 }
         }
     }
@@ -74,92 +77,97 @@ class HomeScreenViewModel @Inject constructor(
 
     fun loadNextPage() {
         val currentState = _uiState.value
-        if (currentState !is HomeUiState.Content
-            || currentState.isPaginationLoading || isLastPage)
+        if (currentState !is HomeUiState.Content || currentState.isPaginationLoading || isLastPage || currentState.error != null)
             return
 
+        if (!isNetworkFirstPageLoaded) {
+            return
+        }
+
         currentPage++
-        executeLoad()
+        loadPhotos()
     }
 
     fun retry() {
-        executeLoad()
+        loadPhotos()
     }
 
-    private fun executeLoad() {
-        val query = _searchQuery.value
-        if (query.isBlank()) {
-            loadPhotosForSelectedCategory()
-        } else {
-            searchPhotos(query)
-        }
-    }
+    private fun loadPhotos() {
+        val activeType = getActiveGroupType()
 
-    private fun loadCuratedPhotos() {
-        executePhotoRequest {
-            getCuratedPhotosUseCase(page = currentPage, perPage = PHOTOS_PER_PAGE)
-        }
-    }
-
-    private fun loadPhotosByCategory(category: Category) {
-        executePhotoRequest {
-            getPhotosByCategoryUseCase(category = category, page = currentPage, perPage = PHOTOS_PER_PAGE)
-        }
-    }
-
-    private fun searchPhotos(query: String) {
-        executePhotoRequest {
-            getPhotosByQueryUseCase(query = query, page = currentPage, perPage = PHOTOS_PER_PAGE)
-        }
-    }
-
-    private fun executePhotoRequest(
-        flowProvider: () -> Flow<Outcome<List<Photo>, PhotosRepositoryError>>
-    ) {
         currentJob?.cancel()
         currentJob = viewModelScope.launch {
-            val currentState = _uiState.value
-
-            if (currentState is HomeUiState.Content) {
-                _uiState.value = currentState.copy(isPaginationLoading = true, error = null)
-            } else if (currentState !is HomeUiState.Loading) {
-                _uiState.value = HomeUiState.Loading
+            if (currentPage == 1) {
+                loadFirstPage(activeType)
+            } else {
+                loadSubsequentPages(activeType)
             }
+        }
+    }
 
-            flowProvider().collect { outcome ->
-                when (outcome) {
-                    is Outcome.Success -> {
-                        val newPhotos = outcome.value
-                        isLastPage = newPhotos.size < PHOTOS_PER_PAGE
+    private suspend fun loadFirstPage(activeType: PhotoGroupType) {
+        val cached = getCachedPhotosUseCase(activeType)
+        if (cached is Outcome.Success && cached.value.photos.isNotEmpty()) {
+            _uiState.value = HomeUiState.Content(
+                photos = cached.value.photos,
+                isPaginationLoading = true,
+                error = null
+            )
+        } else {
+            _uiState.value = HomeUiState.Loading
+        }
 
-                        val currentContent = _uiState.value as? HomeUiState.Content
-                        if (currentContent != null && currentPage > 1) {
-                            _uiState.value = currentContent.copy(
-                                photos = currentContent.photos + newPhotos,
-                                isPaginationLoading = false,
-                                error = null
-                            )
-                        } else {
-                            if (newPhotos.isEmpty()) {
-                                _uiState.value = HomeUiState.Empty
-                            } else {
-                                _uiState.value = HomeUiState.Content(
-                                    photos = newPhotos, error = null
-                                )
-                            }
-                        }
-                    }
-                    is Outcome.Error -> {
-                        val currentContent = _uiState.value as? HomeUiState.Content
-                        if (currentContent != null) {
-                            _uiState.value = currentContent.copy(
-                                isPaginationLoading = false, error = outcome.type)
-                        } else {
-                            _uiState.value = HomeUiState.Error(outcome.type)
-                        }
-                    }
+        val outcome = getPhotosUseCase(type = activeType, page = currentPage, perPage = PHOTOS_PER_PAGE)
+        when (outcome) {
+            is Outcome.Success -> {
+                val newPhotos = outcome.value.photos
+                isLastPage = newPhotos.size < PHOTOS_PER_PAGE
+                isNetworkFirstPageLoaded = true
+                _uiState.value = if (newPhotos.isEmpty()) HomeUiState.Empty else HomeUiState.Content(photos = newPhotos)
+            }
+            is Outcome.Error -> handleLoadError(outcome.type)
+        }
+    }
+
+    private suspend fun loadSubsequentPages(activeType: PhotoGroupType) {
+        val currentState = _uiState.value as? HomeUiState.Content
+        if (currentState != null) {
+            _uiState.value = currentState.copy(isPaginationLoading = true, error = null)
+        }
+
+        val outcome = getPhotosUseCase(type = activeType, page = currentPage, perPage = PHOTOS_PER_PAGE)
+        when (outcome) {
+            is Outcome.Success -> {
+                val newPhotos = outcome.value.photos
+                isLastPage = newPhotos.size < PHOTOS_PER_PAGE
+                val currentContent = _uiState.value as? HomeUiState.Content
+                if (currentContent != null) {
+                    _uiState.value = currentContent.copy(
+                        photos = currentContent.photos + newPhotos,
+                        isPaginationLoading = false,
+                        error = null
+                    )
+                } else {
+                    _uiState.value = if (newPhotos.isEmpty()) HomeUiState.Empty else HomeUiState.Content(photos = newPhotos)
                 }
             }
+            is Outcome.Error -> handleLoadError(outcome.type)
+        }
+    }
+
+    private fun handleLoadError(error: PhotosRepositoryError?) {
+        val currentContent = _uiState.value as? HomeUiState.Content
+        if (currentContent != null) {
+            if (currentContent.photos.isEmpty()){
+                _uiState.value = HomeUiState.Error(error)
+            } else {
+                _uiState.value = currentContent.copy(
+                    isPaginationLoading = false,
+                    error = error
+                )
+            }
+        } else {
+            _uiState.value = HomeUiState.Error(error)
         }
     }
 
@@ -167,56 +175,42 @@ class HomeScreenViewModel @Inject constructor(
         currentPage = 1
         currentJob?.cancel()
         isLastPage = false
-    }
-
-    private fun loadPhotosForSelectedCategory() {
-        when (val sel = _selectedCategory.value) {
-            is SelectedCategory.Curated -> loadCuratedPhotos()
-            is SelectedCategory.Category -> {
-                val idx = sel.id
-                if (idx in categories.indices) {
-                    loadPhotosByCategory(categories[idx])
-                } else {
-                    _selectedCategory.value = SelectedCategory.Curated
-                    loadCuratedPhotos()
-                }
-            }
-        }
+        isNetworkFirstPageLoaded = false
     }
 
     fun selectCategoryByIndex(index: Int) {
         if (index !in categories.indices) return
-        val newSelection = SelectedCategory.Category(index)
-
-        if (_selectedCategory.value != newSelection) {
+        val newSelection = PhotoGroupType.Category(categories[index].name)
+        val oldQuery = _searchQuery.value
+        
+        if (oldQuery.isEmpty() && _selectedCategory.value != newSelection) {
             _selectedCategory.value = newSelection
-            if (_searchQuery.value.isBlank()) {
-                _uiState.value = HomeUiState.Loading
-                resetPagination()
-                loadPhotosForSelectedCategory()
-            }
+            resetPagination()
+            _uiState.value = HomeUiState.Loading
+            loadPhotos()
+        } else {
+            _selectedCategory.value = newSelection
+            _searchQuery.value = ""
         }
     }
 
     fun selectCurated() {
-        if (_selectedCategory.value != SelectedCategory.Curated) {
-            _selectedCategory.value = SelectedCategory.Curated
-            if (_searchQuery.value.isBlank()) {
-                _uiState.value = HomeUiState.Loading
-                resetPagination()
-                loadCuratedPhotos()
-            }
+        val oldQuery = _searchQuery.value
+        
+        if (oldQuery.isEmpty() && _selectedCategory.value !is PhotoGroupType.Curated) {
+            _selectedCategory.value = PhotoGroupType.Curated
+            resetPagination()
+            _uiState.value = HomeUiState.Loading
+            loadPhotos()
+        } else {
+            _selectedCategory.value = PhotoGroupType.Curated
+            _searchQuery.value = ""
         }
     }
 
     companion object {
         private const val PHOTOS_PER_PAGE = 30
     }
-}
-
-sealed class SelectedCategory {
-    object Curated : SelectedCategory()
-    data class Category(val id: Int) : SelectedCategory()
 }
 
 sealed class HomeUiState {

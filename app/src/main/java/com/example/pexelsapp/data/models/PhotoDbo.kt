@@ -5,7 +5,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "saved_photos")
+@Entity(tableName = "photos")
 data class PhotoDbo(
     @PrimaryKey val id: Long,
     val width: Int,
@@ -17,9 +17,6 @@ data class PhotoDbo(
     val photographer: PhotographerDbo,
 
     @Embedded(prefix = "source_")
-    val source: PhotoSourceDbo,
-
-    @ColumnInfo(name = "added_at")
-    val addedAt: Long = System.currentTimeMillis()
+    val source: PhotoSourceDbo
 )
 

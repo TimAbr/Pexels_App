@@ -32,9 +32,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -57,6 +59,7 @@ import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.domain.common.models.PhotoSource
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 fun PhotoGridShimmer() {
@@ -121,12 +124,22 @@ fun <E> PhotoGrid(
 
         val listState = rememberLazyStaggeredGridState()
 
+        val currentPhotos by rememberUpdatedState(photos)
+
+
+
         if (error == null) {
+
             LaunchedEffect(listState) {
-                snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                snapshotFlow {
+                    listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                }
+                    .filterNotNull()
                     .distinctUntilChanged()
                     .collect { lastIndex ->
-                        if (lastIndex != null && lastIndex >= photos.size - 5) {
+                        val totalCount = currentPhotos.size
+
+                        if (totalCount > 0 && lastIndex >= totalCount - 5) {
                             onLoadMore()
                         }
                     }

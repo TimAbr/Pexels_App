@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
+import com.example.pexelsapp.domain.common.models.PhotoGroupType
 import com.example.pexelsapp.domain.features.home.models.Category
 import com.example.pexelsapp.presentation.features.components.ScreenStub
 import com.example.pexelsapp.presentation.features.components.PhotoGrid
@@ -179,41 +180,41 @@ fun HomeSearchBar(
 @Composable
 fun HomeCategoryList(
     categories: List<Category>,
-    selectedCategory: SelectedCategory,
+    selectedCategory: PhotoGroupType,
     onCategoryClick: (Category) -> Unit,
     onCuratedClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedCategoryId: Int? = null
-
     LazyRow(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if(selectedCategory is SelectedCategory.Category){
-            selectedCategoryId = selectedCategory.id
-            val chosenCategory = categories[selectedCategoryId]
+        val selectedCategoryName = (selectedCategory as? PhotoGroupType.Category)?.category
 
-            item{
-                CategoryChip(
-                    label = chosenCategory.name,
-                    isSelected = true,
-                    onClick = { onCategoryClick(chosenCategory) }
-                )
+        if(selectedCategoryName != null){
+            val chosenCategory = categories.find { it.name == selectedCategoryName }
+            if (chosenCategory != null) {
+                item {
+                    CategoryChip(
+                        label = chosenCategory.name,
+                        isSelected = true,
+                        onClick = { onCategoryClick(chosenCategory) }
+                    )
+                }
             }
         }
 
         item {
             CategoryChip(
                 label = stringResource(R.string.curated),
-                isSelected = selectedCategoryId==null,
+                isSelected = selectedCategory is PhotoGroupType.Curated,
                 onClick = onCuratedClick
             )
         }
 
         items(
-            categories.filterIndexed { index, category -> index!= selectedCategoryId}
+            categories.filter { it.name != selectedCategoryName }
         ) { category ->
             CategoryChip(
                 label = category.name,
