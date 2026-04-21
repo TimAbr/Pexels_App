@@ -6,7 +6,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import com.example.pexelsapp.BuildConfig
-import com.example.pexelsapp.data.mappers.toGoogleAuthLoginError
+import com.example.pexelsapp.presentation.features.auth.mappers.toAuthLoginError
 import com.example.pexelsapp.domain.features.auth.models.GoogleIdToken
 import com.example.pexelsapp.domain.features.auth.repositories.AuthLoginError
 import com.example.pexelsapp.utils.models.Outcome
@@ -46,7 +46,7 @@ class AndroidGoogleIdProvider @Inject constructor(
 
                 handleSignIn(result)
             } catch (e: Exception) {
-                Outcome.Error(e.toGoogleAuthLoginError())
+                Outcome.Error(e.toAuthLoginError())
             }
         }
 
