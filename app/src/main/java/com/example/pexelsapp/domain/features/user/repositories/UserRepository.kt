@@ -26,4 +26,3 @@ sealed interface UserError {
         object InvalidData : Update
     }
 }
-
