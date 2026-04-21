@@ -1,5 +1,7 @@
 package com.example.pexelsapp.domain.features.auth.models
 
-sealed interface AuthMethod {
-    object Google : AuthMethod
+import com.example.pexelsapp.domain.features.auth.repositories.AuthLoginError
+
+sealed interface AuthMethod<out E : AuthLoginError> {
+    object Google : AuthMethod<AuthLoginError.GoogleAuthError>
 }

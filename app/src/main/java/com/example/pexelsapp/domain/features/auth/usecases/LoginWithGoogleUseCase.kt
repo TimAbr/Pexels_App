@@ -8,6 +8,6 @@ import com.example.pexelsapp.domain.features.auth.repositories.AuthRepository
 class LoginWithGoogleUseCase(
     private val authRepository: AuthRepository,
 ) {
-    suspend operator fun invoke(): Outcome<Unit, AuthLoginError> =
+    suspend operator fun invoke(): Outcome<Unit, AuthLoginError.GoogleAuthError> =
         authRepository.login(AuthMethod.Google)
 }
