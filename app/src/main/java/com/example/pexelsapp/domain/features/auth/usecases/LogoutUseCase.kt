@@ -1,8 +1,8 @@
-package org.example.project.domain.feature.auth.usecases
+package com.example.pexelsapp.domain.features.auth.usecases
 
-import org.example.project.domain.feature.auth.repositories.AuthLogoutError
-import org.example.project.domain.feature.auth.repositories.AuthRepository
-import org.example.project.utils.models.Outcome
+import com.example.pexelsapp.utils.models.Outcome
+import com.example.pexelsapp.domain.features.auth.repositories.AuthLogoutError
+import com.example.pexelsapp.domain.features.auth.repositories.AuthRepository
 
 class LogoutUseCase(
     private val authRepository: AuthRepository,

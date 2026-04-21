@@ -1,4 +1,4 @@
-package org.example.project.domain.feature.auth.models
+package com.example.pexelsapp.domain.features.auth.models
 
 sealed interface AuthMethod {
     object Google : AuthMethod

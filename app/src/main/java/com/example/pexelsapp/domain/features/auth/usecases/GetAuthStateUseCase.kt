@@ -1,6 +1,6 @@
-package org.example.project.domain.feature.auth.usecases
+package com.example.pexelsapp.domain.features.auth.usecases
 
-import org.example.project.domain.feature.auth.repositories.AuthRepository
+import com.example.pexelsapp.domain.features.auth.repositories.AuthRepository
 
 class GetAuthStateUseCase(
     private val authRepository: AuthRepository,

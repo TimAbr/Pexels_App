@@ -1,8 +1,8 @@
-package org.example.project.domain.feature.auth.repositories
+package com.example.pexelsapp.domain.features.auth.repositories
 
 import kotlinx.coroutines.flow.StateFlow
-import org.example.project.domain.feature.auth.models.AuthMethod
-import org.example.project.utils.models.Outcome
+import com.example.pexelsapp.domain.features.auth.models.AuthMethod
+import com.example.pexelsapp.utils.models.Outcome
 
 interface AuthRepository {
     val isAuthorized: StateFlow<Boolean>

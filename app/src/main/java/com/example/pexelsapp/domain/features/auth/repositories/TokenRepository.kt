@@ -1,9 +1,8 @@
-package org.example.project.domain.feature.auth.repositories
+package com.example.pexelsapp.domain.features.auth.repositories
 
-import kotlinx.coroutines.flow.Flow
-import org.example.project.domain.feature.auth.models.AccessToken
-import org.example.project.domain.feature.auth.models.RefreshToken
-import org.example.project.domain.feature.auth.models.TokenPair
+import com.example.pexelsapp.domain.features.auth.models.AccessToken
+import com.example.pexelsapp.domain.features.auth.models.RefreshToken
+import com.example.pexelsapp.domain.features.auth.models.TokenPair
 
 interface TokenRepository {
     fun saveTokens(tokenPair: TokenPair)

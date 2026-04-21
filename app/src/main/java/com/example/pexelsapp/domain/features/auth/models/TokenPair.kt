@@ -1,4 +1,4 @@
-package org.example.project.domain.feature.auth.models
+package com.example.pexelsapp.domain.features.auth.models
 
 data class TokenPair(
     val accessToken: AccessToken,
