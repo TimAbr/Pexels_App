@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.Surface
 import com.example.pexelsapp.domain.features.config.models.AppTheme
 
 private val DarkColorScheme = darkColorScheme(
@@ -56,7 +57,11 @@ fun PexelsAppTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = Typography
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            content = content
+        )
+    }
 }
