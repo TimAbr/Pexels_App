@@ -5,6 +5,7 @@ import com.example.pexelsapp.domain.features.bookmarks.repositories.BookmarksRep
 import com.example.pexelsapp.domain.features.bookmarks.search.models.SearchMatcher
 import com.example.pexelsapp.utils.models.Outcome
 import javax.inject.Inject
+import kotlin.math.max
 
 class SearchBookmarksUseCase @Inject constructor(
     private val bookmarksRepository: BookmarksRepository,
@@ -31,7 +32,9 @@ class SearchBookmarksUseCase @Inject constructor(
 
         return allBookmarks
             .map { photo ->
-                val score = searchMatcher.match(query, photo.description)
+                val descriptionScore = searchMatcher.match(query, photo.description)
+                val authorNameScore = searchMatcher.match(query, photo.photographer.name)
+                val score = max(descriptionScore, authorNameScore)
                 photo to score
             }
             .filter { it.second > 0.0 }
