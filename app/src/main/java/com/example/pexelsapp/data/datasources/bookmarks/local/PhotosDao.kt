@@ -16,7 +16,7 @@ interface PhotosDao {
 
     @Query("SELECT * FROM photos WHERE id = :photoId")
     suspend fun getPhotoById(photoId: Long): PhotoDbo?
-    // Deletes general photos that are neither bookmarked nor cached
+
     @Query("""
         DELETE FROM photos 
         WHERE id NOT IN (SELECT photo_id FROM bookmarks) 

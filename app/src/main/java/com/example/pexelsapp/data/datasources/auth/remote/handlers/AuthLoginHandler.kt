@@ -7,8 +7,8 @@ import dagger.MapKey
 import kotlin.reflect.KClass
 
 
-interface AuthLoginHandler<in M : AuthMethod<*>, out E : AuthLoginError> {
-    suspend fun login(method: M): Outcome<Unit, E>
+interface AuthLoginHandler<M : AuthMethod<*>> {
+    suspend fun login(method: M): Outcome<Unit, AuthLoginError>
 }
 
 @MapKey

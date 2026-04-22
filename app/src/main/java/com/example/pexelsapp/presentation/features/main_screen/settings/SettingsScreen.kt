@@ -293,8 +293,8 @@ fun AppTheme.toResourceId(): Int = when (this) {
 @Composable
 fun AppLanguage.getDisplayName(): String = when (this) {
     AppLanguage.System -> stringResource(R.string.lang_system)
-    AppLanguage.English -> "English"
-    AppLanguage.Russian -> "Русский"
+    AppLanguage.English -> stringResource(R.string.lang_english)
+    AppLanguage.Russian -> stringResource(R.string.lang_russian)
 }
 
 @ThemedPreview

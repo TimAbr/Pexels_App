@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class FirebaseAuthDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val loginHandlers: Map<Class<out AuthMethod<*>>,
-            @JvmSuppressWildcards AuthLoginHandler<AuthMethod<*>, AuthLoginError>>,
+            @JvmSuppressWildcards AuthLoginHandler<out AuthMethod<*>>>,
 ) : AuthDataSource {
 
     private companion object {
@@ -38,7 +38,9 @@ class FirebaseAuthDataSource @Inject constructor(
 
     override suspend fun <E : AuthLoginError> login(method: AuthMethod<E>): Outcome<Unit, E> {
         val handler = loginHandlers[method::class.java]
-            ?: return Outcome.Error(AuthLoginError.Common.Unknown as E)
+            ?: return Outcome.Error(AuthLoginError.Common.NotSupported as E)
+
+        val castedHandler = handler as AuthLoginHandler<AuthMethod<E>>
 
         @Suppress("UNCHECKED_CAST")
         return handler.login(method) as Outcome<Unit, E>

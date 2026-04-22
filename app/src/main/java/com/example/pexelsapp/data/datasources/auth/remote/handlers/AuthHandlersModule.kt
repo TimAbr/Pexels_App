@@ -1,6 +1,7 @@
 package com.example.pexelsapp.data.datasources.auth.remote.handlers
 
 import com.example.pexelsapp.domain.features.auth.models.AuthMethod
+import com.example.pexelsapp.domain.features.auth.repositories.AuthLoginError
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -16,5 +17,5 @@ interface AuthHandlersModule {
     @AuthMethodKey(AuthMethod.Google::class)
     fun bindGoogleLoginHandler(
         handler: GoogleLoginHandler
-    ): AuthLoginHandler<AuthMethod<*>, AuthLoginError>
+    ): AuthLoginHandler<out AuthMethod<*>>
 }

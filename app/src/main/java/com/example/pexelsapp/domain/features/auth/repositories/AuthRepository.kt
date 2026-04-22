@@ -21,6 +21,7 @@ sealed interface AuthLoginError {
         object ServerError : Common
         object Unknown : Common
         object Canceled : Common
+        object NotSupported : Common
     }
     
     interface GoogleAuthError : AuthLoginError {

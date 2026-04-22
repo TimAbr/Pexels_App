@@ -24,11 +24,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.pexelsapp.domain.features.config.models.AppLanguage
 import com.example.pexelsapp.R
+import com.example.pexelsapp.domain.features.config.models.AppLanguage
 import com.example.pexelsapp.presentation.theme.PexelsAppTheme
+import com.example.pexelsapp.utils.LocaleHelper
 import com.example.pexelsapp.utils.ThemedPreview
 
 @Composable
@@ -76,6 +78,9 @@ fun LanguageItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val currentLocale = LocaleHelper.getCurrentLocale(configuration)
+
     val backgroundColor = if (isSelected) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     } else {
@@ -86,6 +91,21 @@ fun LanguageItem(
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurface
+    }
+
+    val mainText = when (language) {
+        AppLanguage.System -> stringResource(R.string.lang_system)
+        AppLanguage.English -> "English"
+        AppLanguage.Russian -> "Русский"
+    }
+
+    val subText = when (language) {
+        AppLanguage.System -> {
+            LocaleHelper.getSystemLocale().getDisplayName(currentLocale)
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(currentLocale) else it.toString() }
+        }
+        AppLanguage.English -> stringResource(R.string.lang_english)
+        AppLanguage.Russian -> stringResource(R.string.lang_russian)
     }
 
     Row(
@@ -100,13 +120,13 @@ fun LanguageItem(
     ) {
         Column {
             Text(
-                text = language.getDisplayName(),
+                text = mainText,
                 style = MaterialTheme.typography.titleMedium,
                 color = contentColor
             )
-            if (language != AppLanguage.System) {
+            if (mainText != subText || language == AppLanguage.System) {
                 Text(
-                    text = language.getNativeName(),
+                    text = subText,
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor.copy(alpha = 0.6f)
                 )
@@ -122,12 +142,6 @@ fun LanguageItem(
             )
         }
     }
-}
-
-private fun AppLanguage.getNativeName(): String = when (this) {
-    AppLanguage.English -> "English"
-    AppLanguage.Russian -> "Русский"
-    AppLanguage.System -> ""
 }
 
 @ThemedPreview

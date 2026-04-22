@@ -11,8 +11,8 @@ import javax.inject.Inject
 
 class GoogleLoginHandler @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-) : AuthLoginHandler<AuthMethod.Google, AuthLoginError.GoogleAuthError> {
-    
+) : AuthLoginHandler<AuthMethod.Google> {
+
     private companion object {
         const val TAG = "GoogleLoginHandler"
     }

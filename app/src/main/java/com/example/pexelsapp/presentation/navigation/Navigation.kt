@@ -12,6 +12,7 @@ import androidx.navigation.toRoute
 import com.example.pexelsapp.presentation.features.auth.AuthScreen
 import com.example.pexelsapp.presentation.features.auth.AuthViewModel
 import com.example.pexelsapp.presentation.features.auth.google.GoogleIdProvider
+import com.example.pexelsapp.presentation.features.auth.google.LocalGoogleIdProvider
 import com.example.pexelsapp.presentation.features.details_screen.DetailsScreen
 import com.example.pexelsapp.presentation.features.main_screen.MainContainer
 import dagger.hilt.EntryPoint
@@ -58,13 +59,7 @@ fun RootNavigation(
     ) {
         composable<RootGraph.Auth> {
             val viewModel: AuthViewModel = hiltViewModel()
-            val context = LocalContext.current
-            val googleIdProvider = remember(context) {
-                EntryPointAccessors.fromActivity(
-                    context as Activity,
-                    AuthEntryPoint::class.java
-                ).googleIdProvider()
-            }
+            val googleIdProvider = LocalGoogleIdProvider.current
             
             AuthScreen(
                 viewModel = viewModel,

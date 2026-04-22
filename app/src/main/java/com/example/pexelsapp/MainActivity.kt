@@ -14,15 +14,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import com.example.pexelsapp.presentation.features.auth.google.GoogleIdProvider
+import com.example.pexelsapp.presentation.features.auth.google.LocalGoogleIdProvider
 
 import com.example.pexelsapp.presentation.navigation.RootNavigation
 import com.example.pexelsapp.presentation.theme.PexelsAppTheme
 import com.example.pexelsapp.utils.LocaleHelper
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
+
+    @Inject
+    lateinit var googleIdProvider: GoogleIdProvider
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -38,7 +45,9 @@ class MainActivity : ComponentActivity() {
 
             CompositionLocalProvider(
                 LocalContext provides localizedContext,
-                LocalConfiguration provides localizedContext.resources.configuration
+                LocalConfiguration provides localizedContext.resources.configuration,
+                LocalGoogleIdProvider provides googleIdProvider,
+
             ) {
 
                 PexelsAppTheme(appTheme = appTheme) {
