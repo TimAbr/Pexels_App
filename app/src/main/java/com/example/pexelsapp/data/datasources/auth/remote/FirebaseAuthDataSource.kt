@@ -16,12 +16,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@BoundTo(supertype = AuthRemoteDataSource::class, component = SingletonComponent::class)
-class FirebaseAuthRemoteDataSource @Inject constructor(
+@BoundTo(supertype = AuthDataSource::class, component = SingletonComponent::class)
+class FirebaseAuthDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val loginHandlers: Map<Class<out AuthMethod<*>>,
             @JvmSuppressWildcards AuthLoginHandler<AuthMethod<*>, AuthLoginError>>,
-) : AuthRemoteDataSource {
+) : AuthDataSource {
 
     private companion object {
         const val TAG = "FirebaseAuthRemoteDS"

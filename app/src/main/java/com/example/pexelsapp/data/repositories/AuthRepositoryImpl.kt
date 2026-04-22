@@ -1,6 +1,6 @@
 package com.example.pexelsapp.data.repositories
 
-import com.example.pexelsapp.data.datasources.auth.remote.AuthRemoteDataSource
+import com.example.pexelsapp.data.datasources.auth.remote.AuthDataSource
 import com.example.pexelsapp.domain.features.auth.models.AuthMethod
 import com.example.pexelsapp.domain.features.auth.repositories.AuthLoginError
 import com.example.pexelsapp.domain.features.auth.repositories.AuthLogoutError
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 @BoundTo(supertype = AuthRepository::class, component = SingletonComponent::class)
 class AuthRepositoryImpl @Inject constructor(
-    private val remoteDataSource: AuthRemoteDataSource,
+    private val remoteDataSource: AuthDataSource,
 ) : AuthRepository {
 
     override val isAuthorized: StateFlow<Boolean> = remoteDataSource.isAuthorized
