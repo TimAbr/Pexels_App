@@ -12,9 +12,7 @@ plugins {
 
 android {
     namespace = "com.example.pexelsapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.pexelsapp"
@@ -33,9 +31,11 @@ android {
 
         val apiKey = properties.getProperty("MY_API_KEY") ?: ""
         val googleWebClientId = properties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
+        val imgBBApiKey = properties.getProperty("IMGBB_API_KEY") ?: ""
 
         buildConfigField("String", "MY_API_KEY", "\"$apiKey\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        buildConfigField("String", "IMGBB_API_KEY", "\"$imgBBApiKey\"")
     }
 
     buildTypes {
