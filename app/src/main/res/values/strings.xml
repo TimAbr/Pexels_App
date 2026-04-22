@@ -45,6 +45,8 @@
     <string name="common_ok">OK</string>
     <string name="logout">Logout</string>
     <string name="change_photo">Change Photo</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="get_from_gallery">Gallery</string>
 
     <string name="details">Details</string>
     <string name="no_description">No description available</string>

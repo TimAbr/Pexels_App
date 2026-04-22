@@ -12,6 +12,8 @@ import com.example.pexelsapp.domain.features.user.models.User
 import com.example.pexelsapp.domain.features.user.usecases.ObserveUserUseCase
 import com.example.pexelsapp.domain.features.user.usecases.UpdateUserUseCase
 import com.example.pexelsapp.domain.features.auth.usecases.LogoutUseCase
+import com.example.pexelsapp.presentation.features.main_screen.settings.user.photo.models.ImagePickerManager
+import com.example.pexelsapp.presentation.features.main_screen.settings.user.photo.models.ImageProviderType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +30,7 @@ class SettingsViewModel @Inject constructor(
     observeUserUseCase: ObserveUserUseCase,
     private val updateUserUseCase: UpdateUserUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val imagePickerManager: ImagePickerManager,
 ) : ViewModel() {
 
     val theme: StateFlow<AppTheme> = getAppThemeUseCase()
@@ -71,6 +74,25 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             updateUserUseCase(currentUser.copy(name = newName))
         }
+    }
+
+    fun pickImageFromGallery() {
+        viewModelScope.launch {
+            val uri = imagePickerManager.getImage(ImageProviderType.GALLERY)
+            uri?.let { updatePhoto(it.value) }
+        }
+    }
+
+    fun takePhotoFromCamera() {
+        viewModelScope.launch {
+            val uri = imagePickerManager.getImage(ImageProviderType.CAMERA)
+            uri?.let { updatePhoto(it.value) }
+        }
+    }
+
+    private suspend fun updatePhoto(photoUrl: String) {
+        val currentUser = user.value ?: return
+        updateUserUseCase(currentUser.copy(photoUrl = photoUrl))
     }
 
     fun logout() {

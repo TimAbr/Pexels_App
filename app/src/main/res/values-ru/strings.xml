@@ -45,6 +45,8 @@
     <string name="common_ok">ОК</string>
     <string name="logout">Выйти</string>
     <string name="change_photo">Изменить фото</string>
+    <string name="take_photo">Снять фото</string>
+    <string name="get_from_gallery">Галерея</string>
 
     <string name="details">Информация</string>
     <string name="no_description">Описание отсутствует</string>

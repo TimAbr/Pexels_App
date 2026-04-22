@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import com.example.pexelsapp.presentation.features.auth.google.GoogleIdProvider
 import com.example.pexelsapp.presentation.features.auth.google.LocalGoogleIdProvider
+import com.example.pexelsapp.presentation.features.main_screen.settings.user.photo.models.ImagePickerManager
 
 import com.example.pexelsapp.presentation.navigation.RootNavigation
 import com.example.pexelsapp.presentation.theme.PexelsAppTheme
@@ -30,8 +31,13 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var googleIdProvider: GoogleIdProvider
 
+    @Inject
+    lateinit var imagePickerManager: ImagePickerManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        imagePickerManager.bind(this)
 
         installSplashScreen()
 
@@ -47,7 +53,6 @@ class MainActivity : ComponentActivity() {
                 LocalContext provides localizedContext,
                 LocalConfiguration provides localizedContext.resources.configuration,
                 LocalGoogleIdProvider provides googleIdProvider,
-
             ) {
 
                 PexelsAppTheme(appTheme = appTheme) {
