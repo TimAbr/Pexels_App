@@ -8,10 +8,13 @@ import com.example.pexelsapp.domain.features.config.usecases.GetAppLanguageUseCa
 import com.example.pexelsapp.domain.features.config.usecases.GetAppThemeUseCase
 import com.example.pexelsapp.domain.features.config.usecases.SetAppLanguageUseCase
 import com.example.pexelsapp.domain.features.config.usecases.SetAppThemeUseCase
+import com.example.pexelsapp.domain.features.user.models.User
+import com.example.pexelsapp.domain.features.user.usecases.ObserveUserUseCase
+import com.example.pexelsapp.domain.features.user.usecases.UpdateUserUseCase
+import com.example.pexelsapp.domain.features.auth.usecases.LogoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,7 +24,10 @@ class SettingsViewModel @Inject constructor(
     getAppThemeUseCase: GetAppThemeUseCase,
     getAppLanguageUseCase: GetAppLanguageUseCase,
     private val setAppThemeUseCase: SetAppThemeUseCase,
-    private val setAppLanguageUseCase: SetAppLanguageUseCase
+    private val setAppLanguageUseCase: SetAppLanguageUseCase,
+    observeUserUseCase: ObserveUserUseCase,
+    private val updateUserUseCase: UpdateUserUseCase,
+    private val logoutUseCase: LogoutUseCase,
 ) : ViewModel() {
 
     val theme: StateFlow<AppTheme> = getAppThemeUseCase()
@@ -38,6 +44,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = AppLanguage.System
         )
 
+    val user: StateFlow<User?> = observeUserUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
     val availableThemes = listOf(AppTheme.System, AppTheme.Light, AppTheme.Dark)
     val availableLanguages = listOf(AppLanguage.System, AppLanguage.English, AppLanguage.Russian)
 
@@ -50,6 +63,19 @@ class SettingsViewModel @Inject constructor(
     fun onLanguageSelected(language: AppLanguage) {
         viewModelScope.launch {
             setAppLanguageUseCase(language)
+        }
+    }
+
+    fun updateName(newName: String) {
+        val currentUser = user.value ?: return
+        viewModelScope.launch {
+            updateUserUseCase(currentUser.copy(name = newName))
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            logoutUseCase()
         }
     }
 }

@@ -27,4 +27,22 @@
     <string name="lang_english">English</string>
     <string name="lang_russian">Русский</string>
     <string name="lang_system">Системный</string>
+
+    <string name="auth_title">Добро пожаловать в Pexels</string>
+    <string name="auth_google_button">Войти через Google</string>
+    <string name="auth_error">Ошибка авторизации</string>
+    <string name="error_network">Ошибка сети. Проверьте подключение.</string>
+    <string name="error_server">Ошибка сервера. Попробуйте позже.</string>
+    <string name="error_canceled">Вход отменен.</string>
+    <string name="error_no_credentials">Учетные данные не найдены.</string>
+    <string name="error_unknown">Произошла неизвестная ошибка.</string>
+
+    <string name="account">Аккаунт</string>
+    <string name="profile_name">Имя</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_guest">Гость</string>
+    <string name="profile_sign_in_hint">Войдите, чтобы синхронизировать данные</string>
+    <string name="common_ok">ОК</string>
+    <string name="logout">Выйти</string>
+    <string name="change_photo">Изменить фото</string>
 </resources>

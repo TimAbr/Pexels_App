@@ -3,7 +3,16 @@ package com.example.pexelsapp.presentation.features.main_screen.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness4
@@ -20,11 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
-import com.example.pexelsapp.domain.features.config.models.AppTheme
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.example.pexelsapp.R
-
+import com.example.pexelsapp.domain.features.config.models.AppTheme
+import com.example.pexelsapp.presentation.theme.PexelsAppTheme
+import com.example.pexelsapp.utils.ThemedPreview
 
 @Composable
 fun ThemeSettingsScreen(
@@ -33,6 +43,19 @@ fun ThemeSettingsScreen(
 ) {
     val currentTheme by viewModel.theme.collectAsState()
 
+    ThemeSettingsScreenContent(
+        currentTheme = currentTheme,
+        onBack = onBack,
+        onThemeSelected = { viewModel.onThemeSelected(it) }
+    )
+}
+
+@Composable
+private fun ThemeSettingsScreenContent(
+    currentTheme: AppTheme,
+    onBack: () -> Unit,
+    onThemeSelected: (AppTheme) -> Unit
+) {
     SettingsSubScreen(title = stringResource(id = R.string.theme), onBack = onBack) {
         Column(
             modifier = Modifier
@@ -48,30 +71,27 @@ fun ThemeSettingsScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ThemeCard(
-                    theme = AppTheme.Light,
                     isSelected = currentTheme == AppTheme.Light,
                     icon = Icons.Default.BrightnessHigh,
                     label = stringResource(id = AppTheme.Light.toResourceId()),
-                    onClick = { viewModel.onThemeSelected(AppTheme.Light) },
+                    onClick = { onThemeSelected(AppTheme.Light) },
                     modifier = Modifier.weight(1f)
                 )
                 ThemeCard(
-                    theme = AppTheme.Dark,
                     isSelected = currentTheme == AppTheme.Dark,
                     icon = Icons.Default.Brightness4,
                     label = stringResource(id = AppTheme.Dark.toResourceId()),
-                    onClick = { viewModel.onThemeSelected(AppTheme.Dark) },
+                    onClick = { onThemeSelected(AppTheme.Dark) },
                     modifier = Modifier.weight(1f)
                 )
                 ThemeCard(
-                    theme = AppTheme.System,
                     isSelected = currentTheme == AppTheme.System,
                     icon = Icons.Default.SettingsSuggest,
                     label = stringResource(id = AppTheme.System.toResourceId()),
-                    onClick = { viewModel.onThemeSelected(AppTheme.System) },
+                    onClick = { onThemeSelected(AppTheme.System) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -81,26 +101,31 @@ fun ThemeSettingsScreen(
 
 @Composable
 fun ThemeCard(
-    theme: AppTheme,
     isSelected: Boolean,
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) 
-                          else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    val backgroundColor = if (isSelected) {
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
 
     Column(
         modifier = modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(20.dp))
+            .aspectRatio(0.9f)
+            .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
-            .run {
-                if (isSelected) border(2.dp, borderColor, RoundedCornerShape(20.dp)) else this
-            }
-            .clickable { onClick() },
+            .border(
+                width = if (isSelected) 2.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable { onClick() }
+            .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -108,9 +133,9 @@ fun ThemeCard(
             imageVector = icon,
             contentDescription = null,
             tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(28.dp)
         )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
@@ -119,4 +144,14 @@ fun ThemeCard(
     }
 }
 
-
+@ThemedPreview
+@Composable
+private fun ThemeSettingsScreenPreview() {
+    PexelsAppTheme {
+        ThemeSettingsScreenContent(
+            currentTheme = AppTheme.System,
+            onBack = {},
+            onThemeSelected = {}
+        )
+    }
+}

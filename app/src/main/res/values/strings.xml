@@ -27,4 +27,22 @@
     <string name="lang_english">English</string>
     <string name="lang_russian">Русский</string>
     <string name="lang_system">System</string>
+
+    <string name="auth_title">Welcome to Pexels</string>
+    <string name="auth_google_button">Sign in with Google</string>
+    <string name="auth_error">Authentication Error</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_canceled">Login canceled.</string>
+    <string name="error_no_credentials">No credentials found.</string>
+    <string name="error_unknown">An unknown error occurred.</string>
+
+    <string name="account">Account</string>
+    <string name="profile_name">Name</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_guest">Guest</string>
+    <string name="profile_sign_in_hint">Sign in to sync your data</string>
+    <string name="common_ok">OK</string>
+    <string name="logout">Logout</string>
+    <string name="change_photo">Change Photo</string>
 </resources>

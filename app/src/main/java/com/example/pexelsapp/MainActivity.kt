@@ -42,9 +42,8 @@ class MainActivity : ComponentActivity() {
             ) {
 
                 PexelsAppTheme(appTheme = appTheme) {
-                    Surface(color = MaterialTheme.colorScheme.background) {
-                        RootNavigation()
-                    }
+                    val isAuthorized by viewModel.isAuthorized.collectAsState()
+                    RootNavigation(isAuthorized = isAuthorized)
                 }
             }
         }
