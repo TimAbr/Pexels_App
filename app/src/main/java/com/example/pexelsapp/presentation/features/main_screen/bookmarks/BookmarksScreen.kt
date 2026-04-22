@@ -21,7 +21,8 @@ import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.presentation.features.components.ScreenStub
 import com.example.pexelsapp.presentation.features.components.PhotoGrid
 import com.example.pexelsapp.presentation.features.components.PhotoGridShimmer
-import com.example.pexelsapp.presentation.features.main_screen.home.RetrySection
+import com.example.pexelsapp.presentation.features.components.SearchBar
+import com.example.pexelsapp.presentation.features.components.RetrySection
 
 @Composable
 fun BookmarksScreen(
@@ -30,12 +31,19 @@ fun BookmarksScreen(
     onPhotoClick: (Photo) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = viewModel::onQueryChange,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+        )
+
         if (uiState is BookmarksUiState.Loading) {
             LinearProgressIndicator(
                 modifier = Modifier
@@ -66,8 +74,8 @@ fun BookmarksScreen(
 
                 is BookmarksUiState.Empty -> {
                     ScreenStub(
-                        text = stringResource(R.string.no_bookmarks),
-                        buttonText = stringResource(R.string.try_again),
+                        text = stringResource(if (searchQuery.isEmpty()) R.string.no_bookmarks else R.string.no_results_found),
+                        buttonText = stringResource(R.string.explore),
                         onButtonClick = viewModel::retry
                     )
                 }

@@ -7,22 +7,85 @@ import com.example.pexelsapp.domain.features.bookmarks.models.BookmarksEvent
 import com.example.pexelsapp.domain.features.bookmarks.repositories.BookmarksRepositoryError
 import com.example.pexelsapp.domain.features.bookmarks.usecases.GetBookmarksEvents
 import com.example.pexelsapp.domain.features.bookmarks.usecases.GetBookmarksUseCase
+import com.example.pexelsapp.domain.features.bookmarks.search.usecases.SearchBookmarksUseCase
 import com.example.pexelsapp.utils.models.Outcome
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class BookmarksScreenViewModel @Inject constructor(
     private val getBookmarksUseCase: GetBookmarksUseCase,
-    private val getBookmarksEvents: GetBookmarksEvents
+    private val getBookmarksEvents: GetBookmarksEvents,
+    private val searchBookmarksUseCase: SearchBookmarksUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<BookmarksUiState>(BookmarksUiState.None)
-    val uiState = _uiState.asStateFlow()
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    private val _paginatedPhotos = MutableStateFlow<List<Photo>>(emptyList())
+    private val _isPaginationLoading = MutableStateFlow(false)
+    private val _paginationError = MutableStateFlow<BookmarksRepositoryError?>(null)
+
+    val uiState = _searchQuery
+        .debounce(400L)
+        .distinctUntilChanged()
+        .flatMapLatest { query ->
+            if (query.isBlank()) {
+                combine(
+                    _paginatedPhotos,
+                    _isPaginationLoading,
+                    _paginationError
+                ) { paginated, isPagLoading, pagError ->
+                    when {
+                        paginated.isEmpty() && isPagLoading -> BookmarksUiState.Loading
+                        paginated.isEmpty() && pagError != null -> BookmarksUiState.Error(pagError)
+                        paginated.isEmpty() -> BookmarksUiState.Empty
+                        else -> BookmarksUiState.Content(
+                            photos = paginated,
+                            isPaginationLoading = isPagLoading,
+                            error = pagError
+                        )
+                    }
+                }
+            } else {
+                flow {
+                    emit(BookmarksUiState.Loading)
+                    val startTime = System.currentTimeMillis()
+                    
+                    val results = searchBookmarksUseCase(query)
+                    
+                    val elapsedTime = System.currentTimeMillis() - startTime
+                    if (elapsedTime < MIN_SHIMMER_DURATION) {
+                        delay(MIN_SHIMMER_DURATION - elapsedTime)
+                    }
+
+                    if (results.isEmpty()) {
+                        emit(BookmarksUiState.Empty)
+                    } else {
+                        emit(BookmarksUiState.Content(photos = results))
+                    }
+                }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BookmarksUiState.Loading
+        )
 
     private var currentJob: Job? = null
     private var currentPage = 1
@@ -35,95 +98,58 @@ class BookmarksScreenViewModel @Inject constructor(
 
     private fun loadInitialBookmarks() {
         resetPagination()
-        _uiState.value = BookmarksUiState.Loading
+        _paginatedPhotos.value = emptyList()
         executeLoad()
     }
 
     fun loadNextPage() {
-        val currentState = _uiState.value
-        if (currentState !is BookmarksUiState.Content ||
-            currentState.isPaginationLoading || isLastPage
-        ) return
+        if (_searchQuery.value.isNotBlank() || _isPaginationLoading.value || isLastPage) return
 
         currentPage++
         executeLoad()
     }
 
     fun retry() {
-        executeLoad()
+        if (_searchQuery.value.isBlank()) {
+            executeLoad()
+        }
     }
 
     private fun executeLoad() {
         currentJob?.cancel()
         currentJob = viewModelScope.launch {
-            val currentState = _uiState.value
-
-            if (currentState is BookmarksUiState.Content) {
-                _uiState.value = currentState.copy(isPaginationLoading = true, error = null)
-            } else if (currentState !is BookmarksUiState.Loading) {
-                _uiState.value = BookmarksUiState.Loading
-            }
+            _isPaginationLoading.value = true
+            _paginationError.value = null
 
             when (val outcome = getBookmarksUseCase(page = currentPage, perPage = BOOKMARKS_PER_PAGE)) {
                 is Outcome.Success -> {
                     val newPhotos = outcome.value
                     isLastPage = newPhotos.size < BOOKMARKS_PER_PAGE
-
-                    val currentContent = _uiState.value as? BookmarksUiState.Content
-                    if (currentContent != null && currentPage > 1) {
-                        _uiState.value = currentContent.copy(
-                            photos = currentContent.photos + newPhotos,
-                            isPaginationLoading = false,
-                            error = null
-                        )
-                    } else {
-                        if (newPhotos.isEmpty()) {
-                            _uiState.value = BookmarksUiState.Empty
-                        } else {
-                            _uiState.value = BookmarksUiState.Content(photos = newPhotos)
-                        }
-                    }
+                    _paginatedPhotos.value = _paginatedPhotos.value + newPhotos
                 }
                 is Outcome.Error -> {
-                    val currentContent = _uiState.value as? BookmarksUiState.Content
-                    if (currentContent != null) {
-                        _uiState.value = currentContent.copy(
-                            isPaginationLoading = false,
-                            error = outcome.type
-                        )
-                    } else {
-                        _uiState.value = BookmarksUiState.Error(outcome.type)
-                    }
+                    _paginationError.value = outcome.type
                 }
             }
+            _isPaginationLoading.value = false
         }
+    }
+
+    fun onQueryChange(newQuery: String) {
+        _searchQuery.value = newQuery
     }
 
     private fun observeBookmarksEvents() {
         viewModelScope.launch {
             getBookmarksEvents().collect { event ->
-                val currentState = _uiState.value
                 when (event) {
                     is BookmarksEvent.Added -> {
-                        if (currentState is BookmarksUiState.Content) {
-                            if (currentState.photos.none { it.id == event.photo.id }) {
-                                _uiState.value = currentState.copy(
-                                    photos = listOf(event.photo) + currentState.photos
-                                )
-                            }
-                        } else if (currentState is BookmarksUiState.Empty || currentState is BookmarksUiState.None) {
-                            _uiState.value = BookmarksUiState.Content(photos = listOf(event.photo))
+                        if (_paginatedPhotos.value.none { it.id == event.photo.id }) {
+                            _paginatedPhotos.value = listOf(event.photo) + _paginatedPhotos.value
                         }
                     }
                     is BookmarksEvent.Deleted -> {
-                        if (currentState is BookmarksUiState.Content) {
-                            val updatedList = currentState.photos.filterNot { it.id == event.photoId }
-                            if (updatedList.isEmpty()) {
-                                _uiState.value = BookmarksUiState.Empty
-                            } else {
-                                _uiState.value = currentState.copy(photos = updatedList)
-                            }
-                        }
+                        _paginatedPhotos.value = _paginatedPhotos.value.filterNot { it.id == event.photoId }
                     }
                 }
             }
@@ -138,6 +164,7 @@ class BookmarksScreenViewModel @Inject constructor(
 
     companion object {
         private const val BOOKMARKS_PER_PAGE = 30
+        private const val MIN_SHIMMER_DURATION = 500L
     }
 }
 

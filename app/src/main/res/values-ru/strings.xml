@@ -3,10 +3,10 @@
     <string name="no_more_values">Больше нечего показывать(</string>
     <string name="search_hint">Поиск</string>
     <string name="curated">Популярное</string>
-    <string name="try_again">Повторить</string>
+    <string name="try_again">Перезагрузить</string>
     <string name="network_error">Ошибка сети</string>
     <string name="no_results_found">Ничего не найдено</string>
-    <string name="explore">Загрузить</string>
+    <string name="explore">Перезагрузить</string>
     <string name="bookmarks_error">Ошибка загрузки закладок</string>
     <string name="no_bookmarks">Вы еще ничего не сохранили</string>
     <string name="download_text">Скачать</string>
@@ -45,4 +45,7 @@
     <string name="common_ok">ОК</string>
     <string name="logout">Выйти</string>
     <string name="change_photo">Изменить фото</string>
+
+    <string name="details">Информация</string>
+    <string name="no_description">Описание отсутствует</string>
 </resources>

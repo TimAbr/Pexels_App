@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -28,6 +30,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -53,6 +57,7 @@ import coil3.request.crossfade
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.presentation.features.components.ScreenStub
+import coil3.compose.AsyncImagePainter
 
 @Composable
 fun DetailsScreen(
@@ -156,7 +161,7 @@ fun PhotoContent(
     onBookmarkClick: () -> Unit,
     onDownloadClick: () -> Unit
 ) {
-
+    var showInfoDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -165,7 +170,11 @@ fun PhotoContent(
         verticalArrangement = Arrangement.Center
 
     ) {
-        ZoomablePhotoCard(photo = photo, modifier = Modifier.weight(1f))
+        ZoomablePhotoCard(
+            photo = photo, 
+            modifier = Modifier.weight(1f),
+            onInfoClick = { showInfoDialog = true }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -187,6 +196,23 @@ fun PhotoContent(
                 isBookmarked = isBookmarked
             )
         }
+    }
+
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text(text = stringResource(R.string.details)) },
+            text = { 
+                Text(
+                    text = photo.description.ifBlank { stringResource(R.string.no_description) }
+                ) 
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfoDialog = false }) {
+                    Text(text = stringResource(R.string.common_ok))
+                }
+            }
+        )
     }
 }
 
@@ -263,7 +289,8 @@ fun BookmarkButton(
 @Composable
 fun ZoomablePhotoCard(
     photo: Photo,
-    modifier: Modifier
+    modifier: Modifier,
+    onInfoClick: () -> Unit
 ){
     var scale by remember { mutableFloatStateOf(1f) }
     val animatedScale by animateFloatAsState(
@@ -299,6 +326,11 @@ fun ZoomablePhotoCard(
                     .crossfade(600)
                     .build(),
                 contentDescription = null,
+                onState = { state ->
+                    if (state is AsyncImagePainter.State.Success) {
+                        isImageLoaded = true
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .graphicsLayer(
@@ -317,6 +349,26 @@ fun ZoomablePhotoCard(
                     ) { scale = 1f },
                 contentScale = ContentScale.Fit
             )
+            
+            if(isImageLoaded) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.4f))
+                        .clickable { onInfoClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Info",
+                        tint = Color.White.copy(alpha = 0.9f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
     }
 
