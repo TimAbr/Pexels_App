@@ -50,4 +50,18 @@
 
     <string name="details">Details</string>
     <string name="no_description">No description available</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Reminders</string>
+    <string name="notification_channel_description">Daily reminders to check new photos</string>
+    <string-array name="reminder_titles">
+        <item>New Inspiration Awaits!</item>
+        <item>Time for some Beauty</item>
+        <item>Fresh Photos are here</item>
+    </string-array>
+    <string-array name="reminder_messages">
+        <item>Check out the most popular photos of the day.</item>
+        <item>Don\'t miss the latest additions from our community.</item>
+        <item>Open the app to find your next wallpaper.</item>
+    </string-array>
 </resources>

@@ -2,6 +2,7 @@ package com.example.pexelsapp.data.datasources.config
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.pexelsapp.domain.features.config.models.AppLanguage
@@ -17,9 +18,13 @@ class ConfigSource @Inject constructor(
     companion object {
         const val APP_THEME_KEY = "app_theme"
         const val APP_LANGUAGE_KEY = "app_language"
+        const val NOTIFICATION_PERMISSION_ASKED_KEY = "notif_asked"
+        const val NOTIFICATIONS_ENABLED_KEY = "notif_enabled"
 
         val APP_THEME = stringPreferencesKey(APP_THEME_KEY)
         val APP_LANGUAGE = stringPreferencesKey(APP_LANGUAGE_KEY)
+        val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey(NOTIFICATION_PERMISSION_ASKED_KEY)
+        val NOTIFICATIONS_ENABLED = booleanPreferencesKey(NOTIFICATIONS_ENABLED_KEY)
     }
 
     fun getAppTheme(): Flow<AppTheme> = dataStore.data.map { preferences ->
@@ -50,5 +55,20 @@ class ConfigSource @Inject constructor(
     suspend fun setAppLanguage(language: AppLanguage) {
         dataStore.edit { it[APP_LANGUAGE] = language.code }
     }
-}
 
+    fun hasAskedNotificationPermission(): Flow<Boolean> = dataStore.data.map { 
+        it[NOTIFICATION_PERMISSION_ASKED] ?: false 
+    }
+
+    suspend fun setNotificationPermissionAsked(asked: Boolean) {
+        dataStore.edit { it[NOTIFICATION_PERMISSION_ASKED] = asked }
+    }
+
+    fun areNotificationsEnabled(): Flow<Boolean> = dataStore.data.map { 
+        it[NOTIFICATIONS_ENABLED] ?: true 
+    }
+
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIFICATIONS_ENABLED] = enabled }
+    }
+}

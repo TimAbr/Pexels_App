@@ -27,5 +27,16 @@ class AppConfigRepositoryImpl @Inject constructor(
     override suspend fun setAppLanguage(language: AppLanguage) {
         configSource.setAppLanguage(language)
     }
-}
 
+    override fun hasAskedNotificationPermission(): Flow<Boolean> = configSource.hasAskedNotificationPermission()
+
+    override suspend fun setNotificationPermissionAsked(asked: Boolean) {
+        configSource.setNotificationPermissionAsked(asked)
+    }
+
+    override fun areNotificationsEnabled(): Flow<Boolean> = configSource.areNotificationsEnabled()
+
+    override suspend fun setNotificationsEnabled(enabled: Boolean) {
+        configSource.setNotificationsEnabled(enabled)
+    }
+}

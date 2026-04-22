@@ -10,4 +10,10 @@ interface AppConfigRepository {
 
     fun getAppLanguage(): Flow<AppLanguage>
     suspend fun setAppLanguage(language: AppLanguage)
+
+    fun hasAskedNotificationPermission(): Flow<Boolean>
+    suspend fun setNotificationPermissionAsked(asked: Boolean)
+
+    fun areNotificationsEnabled(): Flow<Boolean>
+    suspend fun setNotificationsEnabled(enabled: Boolean)
 }

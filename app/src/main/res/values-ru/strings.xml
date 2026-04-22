@@ -50,4 +50,18 @@
 
     <string name="details">Информация</string>
     <string name="no_description">Описание отсутствует</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Напоминания</string>
+    <string name="notification_channel_description">Ежедневные напоминания о новых фото</string>
+    <string-array name="reminder_titles">
+        <item>Новое вдохновение ждет!</item>
+        <item>Время красоты</item>
+        <item>Свежие фото уже здесь</item>
+    </string-array>
+    <string-array name="reminder_messages">
+        <item>Посмотрите самые популярные фото дня.</item>
+        <item>Не пропустите последние новинки от сообщества.</item>
+        <item>Откройте приложение, чтобы найти новые обои.</item>
+    </string-array>
 </resources>
