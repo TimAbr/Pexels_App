@@ -11,6 +11,7 @@ import com.example.pexelsapp.domain.features.config.usecases.SetAppThemeUseCase
 import com.example.pexelsapp.domain.features.user.models.User
 import com.example.pexelsapp.domain.features.user.usecases.ObserveUserUseCase
 import com.example.pexelsapp.domain.features.user.usecases.UpdateUserUseCase
+import com.example.pexelsapp.domain.features.user.usecases.UpdateUserPhotoUseCase
 import com.example.pexelsapp.domain.features.auth.usecases.LogoutUseCase
 import com.example.pexelsapp.presentation.features.main_screen.settings.user.photo.models.ImagePickerManager
 import com.example.pexelsapp.presentation.features.main_screen.settings.user.photo.models.ImageProviderType
@@ -29,6 +30,7 @@ class SettingsViewModel @Inject constructor(
     private val setAppLanguageUseCase: SetAppLanguageUseCase,
     observeUserUseCase: ObserveUserUseCase,
     private val updateUserUseCase: UpdateUserUseCase,
+    private val updateUserPhotoUseCase: UpdateUserPhotoUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val imagePickerManager: ImagePickerManager,
 ) : ViewModel() {
@@ -79,20 +81,15 @@ class SettingsViewModel @Inject constructor(
     fun pickImageFromGallery() {
         viewModelScope.launch {
             val uri = imagePickerManager.getImage(ImageProviderType.GALLERY)
-            uri?.let { updatePhoto(it.value) }
+            uri?.let { updateUserPhotoUseCase(it) }
         }
     }
 
     fun takePhotoFromCamera() {
         viewModelScope.launch {
             val uri = imagePickerManager.getImage(ImageProviderType.CAMERA)
-            uri?.let { updatePhoto(it.value) }
+            uri?.let { updateUserPhotoUseCase(it) }
         }
-    }
-
-    private suspend fun updatePhoto(photoUrl: String) {
-        val currentUser = user.value ?: return
-        updateUserUseCase(currentUser.copy(photoUrl = photoUrl))
     }
 
     fun logout() {

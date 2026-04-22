@@ -8,8 +8,6 @@ import com.example.pexelsapp.utils.models.Outcome
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import dagger.hilt.components.SingletonComponent
-import it.czerwinski.android.hilt.annotations.BoundTo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,20 +16,18 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@BoundTo(supertype = UserRemoteDataSource::class, component = SingletonComponent::class)
-class FirebaseUserRemoteDataSource @Inject constructor(
+class FirebaseUserDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val userMapper: UserMapper,
-) : UserRemoteDataSource {
-
+) {
     private companion object {
-        const val TAG = "FirebaseUserRemoteDS"
+        const val TAG = "FirebaseUserDataSource"
         const val USERS_COLLECTION = "users"
     }
 
     private val _user = MutableStateFlow<User?>(firebaseAuth.currentUser?.let { userMapper.map(it) })
-    override val user: StateFlow<User?> = _user.asStateFlow()
+    val user: StateFlow<User?> = _user.asStateFlow()
 
     private var userSnapshotListener: ListenerRegistration? = null
 
@@ -39,7 +35,6 @@ class FirebaseUserRemoteDataSource @Inject constructor(
         firebaseAuth.addAuthStateListener { auth ->
             val firebaseUser = auth.currentUser
             if (firebaseUser != null) {
-
                 _user.value = userMapper.map(firebaseUser)
                 observeUserDocument(firebaseUser.uid)
             } else {
@@ -73,7 +68,7 @@ class FirebaseUserRemoteDataSource @Inject constructor(
         userSnapshotListener = null
     }
 
-    override suspend fun getUserById(userId: String): Outcome<User, UserError.Get> {
+    suspend fun getUserById(userId: String): Outcome<User, UserError.Get> {
         return try {
             val document = firestore.collection(USERS_COLLECTION).document(userId).get().await()
             val user = userMapper.map(document)
@@ -88,7 +83,7 @@ class FirebaseUserRemoteDataSource @Inject constructor(
         }
     }
 
-    override suspend fun updateProfile(user: User): Outcome<Unit, UserError.Update> {
+    suspend fun updateProfile(user: User): Outcome<Unit, UserError.Update> {
         return try {
             firestore.collection(USERS_COLLECTION)
                 .document(user.id)
@@ -100,4 +95,6 @@ class FirebaseUserRemoteDataSource @Inject constructor(
             Outcome.Error(UserError.Common.Unknown)
         }
     }
+
+    fun getCurrentUserId(): String? = firebaseAuth.currentUser?.uid
 }

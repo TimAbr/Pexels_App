@@ -2,6 +2,8 @@ package com.example.pexelsapp.data.repositories
 
 import com.example.pexelsapp.data.datasources.user.local.UserLocalDataSource
 import com.example.pexelsapp.data.datasources.user.remote.UserRemoteDataSource
+import com.example.pexelsapp.domain.features.user.models.Uri
+import com.example.pexelsapp.domain.features.user.models.Url
 import com.example.pexelsapp.domain.features.user.models.User
 import com.example.pexelsapp.domain.features.user.repositories.UserError
 import com.example.pexelsapp.domain.features.user.repositories.UserRepository
@@ -52,5 +54,9 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun updateProfile(user: User): Outcome<Unit, UserError.Update> {
         return remoteDataSource.updateProfile(user)
+    }
+
+    override suspend fun uploadUserPhoto(uri: Uri): Outcome<Url, UserError.Update> {
+        return remoteDataSource.uploadUserPhoto(uri)
     }
 }
