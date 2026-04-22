@@ -1,5 +1,6 @@
 package com.example.pexelsapp.presentation.features.details_screen
 
+import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,10 +19,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
@@ -52,12 +55,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.pexelsapp.R
 import com.example.pexelsapp.domain.common.models.Photo
+import com.example.pexelsapp.domain.common.models.PhotoSource
+import com.example.pexelsapp.domain.common.models.Photographer
 import com.example.pexelsapp.presentation.features.components.ScreenStub
-import coil3.compose.AsyncImagePainter
+import com.example.pexelsapp.presentation.theme.PexelsAppTheme
+import com.example.pexelsapp.utils.ThemedPreview
 
 @Composable
 fun DetailsScreen(
@@ -162,6 +169,7 @@ fun PhotoContent(
     onDownloadClick: () -> Unit
 ) {
     var showInfoDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -183,13 +191,28 @@ fun PhotoContent(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .height(48.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             DownloadButton(
                 onDownloadClick = onDownloadClick
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            ShareButton(
+                onShareClick = {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, "Check out this photo: ${photo.source.original}")
+                        type = "text/plain"
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                }
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
 
             BookmarkButton(
                 onBookmarkClick = onBookmarkClick,
@@ -253,6 +276,27 @@ fun DownloadButton(
                 color = MaterialTheme.colorScheme.onSurface
             ),
             modifier = Modifier.padding(horizontal = 20.dp)
+        )
+    }
+}
+
+@Composable
+fun ShareButton(
+    onShareClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxHeight()
+            .aspectRatio(1f)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable { onShareClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Share,
+            contentDescription = stringResource(R.string.share),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -372,4 +416,29 @@ fun ZoomablePhotoCard(
         }
     }
 
+}
+
+@ThemedPreview
+@Composable
+private fun DetailsScreenPreview() {
+    PexelsAppTheme {
+        val mockPhoto = Photo(
+            id = 1L,
+            width = 1920,
+            height = 1080,
+            photographer = Photographer(1L, "John Doe"),
+            description = "Beautiful sunset over the ocean",
+            avgColor = "#FFFFFF",
+            source = PhotoSource("", "", "", "", "")
+        )
+        
+        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+            PhotoContent(
+                photo = mockPhoto,
+                isBookmarked = false,
+                onBookmarkClick = {},
+                onDownloadClick = {}
+            )
+        }
+    }
 }

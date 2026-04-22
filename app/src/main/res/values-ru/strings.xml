@@ -50,6 +50,7 @@
 
     <string name="details">Информация</string>
     <string name="no_description">Описание отсутствует</string>
+    <string name="share">Поделиться</string>
 
     <!-- Notifications -->
     <string name="notification_channel_name">Напоминания</string>
