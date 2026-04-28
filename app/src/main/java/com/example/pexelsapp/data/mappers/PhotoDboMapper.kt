@@ -9,7 +9,9 @@ import com.example.pexelsapp.domain.common.models.Photographer
 import javax.inject.Inject
 
 class PhotoDboMapper @Inject constructor() {
-    operator fun invoke(photo: Photo): PhotoDbo = with(photo){
+    fun toDbo(
+        photo: Photo,
+    ): PhotoDbo = with(photo) {
         PhotoDbo(
             id = id,
             width = width,
@@ -18,19 +20,21 @@ class PhotoDboMapper @Inject constructor() {
             avgColor = avgColor,
             photographer = PhotographerDbo(
                 id = photographer.id,
-                name = photographer.name
+                name = photographer.name,
             ),
             source = PhotoSourceDbo(
                 original = source.original,
                 large = source.large,
                 medium = source.medium,
                 small = source.small,
-                tiny = source.tiny
-            )
+                tiny = source.tiny,
+            ),
         )
     }
 
-    operator fun invoke(photoDbo: PhotoDbo): Photo = with(photoDbo){
+    fun toDomain(
+        photoDbo: PhotoDbo,
+    ): Photo = with(photoDbo) {
         Photo(
             id = id,
             width = width,
@@ -39,15 +43,15 @@ class PhotoDboMapper @Inject constructor() {
             avgColor = avgColor,
             photographer = Photographer(
                 id = photographer.id,
-                name = photographer.name
+                name = photographer.name,
             ),
             source = PhotoSource(
                 original = source.original,
                 large = source.large,
                 medium = source.medium,
                 small = source.small,
-                tiny = source.tiny
-            )
+                tiny = source.tiny,
+            ),
         )
     }
 }

@@ -31,7 +31,7 @@ import javax.inject.Inject
 class BookmarksScreenViewModel @Inject constructor(
     private val getBookmarksUseCase: GetBookmarksUseCase,
     private val getBookmarksEvents: GetBookmarksEvents,
-    private val searchBookmarksUseCase: SearchBookmarksUseCase
+    private val searchBookmarksUseCase: SearchBookmarksUseCase,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")

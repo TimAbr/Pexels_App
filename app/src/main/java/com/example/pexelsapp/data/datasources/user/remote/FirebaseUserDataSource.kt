@@ -26,7 +26,7 @@ class FirebaseUserDataSource @Inject constructor(
         const val USERS_COLLECTION = "users"
     }
 
-    private val _user = MutableStateFlow<User?>(firebaseAuth.currentUser?.let { userMapper.map(it) })
+    private val _user = MutableStateFlow<User?>(firebaseAuth.currentUser?.let { userMapper.toDomain(it) })
     val user: StateFlow<User?> = _user.asStateFlow()
 
     private var userSnapshotListener: ListenerRegistration? = null
@@ -35,7 +35,7 @@ class FirebaseUserDataSource @Inject constructor(
         firebaseAuth.addAuthStateListener { auth ->
             val firebaseUser = auth.currentUser
             if (firebaseUser != null) {
-                _user.value = userMapper.map(firebaseUser)
+                _user.value = userMapper.toDomain(firebaseUser)
                 observeUserDocument(firebaseUser.uid)
             } else {
                 stopObservingUserDocument()
@@ -56,7 +56,7 @@ class FirebaseUserDataSource @Inject constructor(
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                    _user.value = userMapper.map(snapshot)
+                    _user.value = userMapper.toDomain(snapshot)
                 } else {
                     Log.d(TAG, "User document does not exist in Firestore yet")
                 }
@@ -71,7 +71,7 @@ class FirebaseUserDataSource @Inject constructor(
     suspend fun getUserById(userId: String): Outcome<User, UserError.Get> {
         return try {
             val document = firestore.collection(USERS_COLLECTION).document(userId).get().await()
-            val user = userMapper.map(document)
+            val user = userMapper.toDomain(document)
             if (user != null) {
                 Outcome.Success(user)
             } else {
@@ -87,7 +87,7 @@ class FirebaseUserDataSource @Inject constructor(
         return try {
             firestore.collection(USERS_COLLECTION)
                 .document(user.id)
-                .set(userMapper.toMap(user))
+                .set(userMapper.toDto(user))
                 .await()
             Outcome.Success(Unit)
         } catch (e: Exception) {

@@ -2,7 +2,7 @@ package com.example.pexelsapp.domain.features.bookmarks.repositories
 
 import com.example.pexelsapp.domain.common.models.Photo
 import com.example.pexelsapp.domain.features.bookmarks.models.BookmarksEvent
-
+import com.example.pexelsapp.domain.features.bookmarks.models.BookmarkedPhoto
 import com.example.pexelsapp.utils.models.Outcome
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -25,6 +25,11 @@ interface BookmarksRepository {
     fun observeIsBookmarked(photoId: Long): Flow<Boolean>
 
     suspend fun isBookmarked(photoId: Long): Boolean
+
+    suspend fun getAllBookmarksWithTimestamps(): Outcome<List<BookmarkedPhoto>, BookmarksRepositoryError>
+
+    suspend fun saveBookmarkedPhoto(bookmarkedPhoto: BookmarkedPhoto): Outcome<Unit, BookmarksRepositoryError>
+
 
     companion object {
         const val DEFAULT_BOOKMARKS_BY_PAGE = 30

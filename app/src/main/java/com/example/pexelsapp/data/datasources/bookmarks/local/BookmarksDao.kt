@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.pexelsapp.data.models.BookmarkDbo
+import com.example.pexelsapp.data.models.BookmarkWithPhotoDbo
 import com.example.pexelsapp.data.models.PhotoDbo
 import kotlinx.coroutines.flow.Flow
 
@@ -39,4 +40,15 @@ interface BookmarksDao {
         ORDER BY b.added_at DESC
     """)
     suspend fun getAllBookmarks(): List<PhotoDbo>
+
+    @Transaction
+    @Query("""
+        SELECT p.*, b.added_at FROM photos p
+        INNER JOIN bookmarks b ON p.id = b.photo_id
+        ORDER BY b.added_at DESC
+    """)
+    suspend fun getAllBookmarksWithTimestamps(): List<BookmarkWithPhotoDbo>
+
+    @Query("DELETE FROM bookmarks")
+    suspend fun clearAllBookmarks()
 }

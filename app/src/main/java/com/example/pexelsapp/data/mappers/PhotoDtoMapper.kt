@@ -7,14 +7,16 @@ import com.example.pexelsapp.domain.common.models.Photographer
 import javax.inject.Inject
 
 class PhotoDtoMapper @Inject constructor(){
-    operator fun invoke(photoDto: PhotoDto): Photo = with(photoDto){
+    fun toDomain(
+        photoDto: PhotoDto,
+    ): Photo = with(photoDto) {
         Photo(
             id = id,
             width = width,
             height = height,
             photographer = Photographer(
                 id = photographerId,
-                name = photographer
+                name = photographer,
             ),
             description = description,
             avgColor = avgColor,
@@ -23,8 +25,8 @@ class PhotoDtoMapper @Inject constructor(){
                 large = src.large,
                 medium = src.medium,
                 small = src.small,
-                tiny = src.tiny
-            )
+                tiny = src.tiny,
+            ),
         )
     }
 }

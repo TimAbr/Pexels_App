@@ -7,34 +7,40 @@ import javax.inject.Inject
 
 class UserMapper @Inject constructor() {
     
-    fun map(firebaseUser: FirebaseUser): User {
+    fun toDomain(
+        firebaseUser: FirebaseUser,
+    ): User {
         return User(
             id = firebaseUser.uid,
             email = firebaseUser.email ?: "",
             name = firebaseUser.displayName ?: "",
-            photoUrl = firebaseUser.photoUrl?.toString() ?: ""
+            photoUrl = firebaseUser.photoUrl?.toString() ?: "",
         )
     }
 
-    fun map(document: DocumentSnapshot): User? {
+    fun toDomain(
+        document: DocumentSnapshot,
+    ): User? {
         val id = document.id
         val email = document.getString("email") ?: return null
         val name = document.getString("name") ?: ""
         val photoUrl = document.getString("photoUrl") ?: ""
-        
+
         return User(
             id = id,
             email = email,
             name = name,
-            photoUrl = photoUrl
+            photoUrl = photoUrl,
         )
     }
 
-    fun toMap(user: User): Map<String, Any> {
+    fun toDto(
+        user: User,
+    ): Map<String, Any> {
         return mapOf(
             "email" to user.email,
             "name" to user.name,
-            "photoUrl" to user.photoUrl
+            "photoUrl" to user.photoUrl,
         )
     }
 }

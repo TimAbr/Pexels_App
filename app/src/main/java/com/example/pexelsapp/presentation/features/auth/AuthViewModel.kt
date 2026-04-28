@@ -6,6 +6,7 @@ import com.example.pexelsapp.domain.features.auth.models.GoogleIdToken
 import com.example.pexelsapp.domain.features.auth.usecases.GetAuthStateUseCase
 import com.example.pexelsapp.domain.features.auth.usecases.LoginWithGoogleUseCase
 import com.example.pexelsapp.domain.features.auth.usecases.ObserveAuthStateUseCase
+import com.example.pexelsapp.domain.features.auth.repositories.AuthLoginError
 import com.example.pexelsapp.utils.models.Outcome
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +55,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun onError(error: com.example.pexelsapp.domain.features.auth.repositories.AuthLoginError) {
+    fun onError(error: AuthLoginError) {
         _state.value = AuthScreenState.Error(error)
     }
 

@@ -18,6 +18,7 @@ import android.util.Log
 import com.example.pexelsapp.data.datasources.bookmarks.local.CuratedCacheDao
 import com.example.pexelsapp.data.datasources.bookmarks.local.PhotosDao
 import com.example.pexelsapp.data.mappers.PhotoDboMapper
+import com.example.pexelsapp.data.models.CuratedCacheDbo
 
 @BoundTo(supertype = PhotosRepository::class, component = SingletonComponent::class)
 class PhotosRepositoryImpl @Inject constructor(
@@ -35,8 +36,8 @@ class PhotosRepositoryImpl @Inject constructor(
     override suspend fun getPhoto(photoId: Long): Outcome<Photo, PhotosRepositoryError> {
         return try {
 
-            photosDao.getPhotoById(photoId)?.let{
-                return Outcome.Success(photoDboMapper(it))
+            photosDao.getPhotoById(photoId)?.let {
+                return Outcome.Success(photoDboMapper.toDomain(it))
             }
 
             val response = photosSource.getPhoto(photoId)
@@ -44,7 +45,7 @@ class PhotosRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {
-                    Outcome.Success(photoDtoMapper(body))
+                    Outcome.Success(photoDtoMapper.toDomain(body))
                 } else {
                     Log.w(TAG, "getPhoto($photoId): Response body is null")
                     Outcome.Error(PhotosRepositoryError.UNKNOWN)
@@ -70,7 +71,7 @@ class PhotosRepositoryImpl @Inject constructor(
                         val currentTime = System.currentTimeMillis()
                         val cachedDbos = curatedCacheDao.getValidCachedPhotos(currentTime)
                         if (cachedDbos.isNotEmpty()) {
-                            val photos = cachedDbos.map { photoDboMapper(it) }
+                            val photos = cachedDbos.map { photoDboMapper.toDomain(it) }
                             curatedCacheDao.deleteExpiredCache(currentTime)
                             Outcome.Success(PhotosPage(photos))
                         } else {
@@ -101,25 +102,25 @@ class PhotosRepositoryImpl @Inject constructor(
 
             if (response.isSuccessful) {
                 val downloadedPhotos = response.body()?.photos ?: emptyList()
-                val photos = downloadedPhotos.map { photoDtoMapper(it) }
+                val photos = downloadedPhotos.map { photoDtoMapper.toDomain(it) }
 
                 if (type is PhotoGroupType.Curated && page == 1) {
                     try {
                         val currentTime = System.currentTimeMillis()
                         val expirationOffset = 60 * 60 * 1000L // 1 hour
-                        val dbos = photos.map { photoDboMapper(it) }
+                        val dbos = photos.map { photoDboMapper.toDbo(it) }
 
                         curatedCacheDao.clearCache()
                         photosDao.deleteOrphanedPhotos()
 
                         photosDao.insertPhotos(dbos)
                         
-                        val cacheRecords = dbos.map { 
-                            com.example.pexelsapp.data.models.CuratedCacheDbo(
-                                photoId = it.id, 
+                        val cacheRecords = dbos.map {
+                            CuratedCacheDbo(
+                                photoId = it.id,
                                 cachedAt = currentTime,
-                                expiration = currentTime + expirationOffset
-                            ) 
+                                expiration = currentTime + expirationOffset,
+                            )
                         }
                         curatedCacheDao.insertCacheRecords(cacheRecords)
                     } catch (e: Exception) {
