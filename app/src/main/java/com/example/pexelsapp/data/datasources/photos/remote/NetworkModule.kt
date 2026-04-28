@@ -21,14 +21,14 @@ object NetworkModule {
     @Singleton
     fun provideAuthInterceptor(): AuthInterceptor {
         return AuthInterceptor(
-            apiKey = BuildConfig.MY_API_KEY
+            apiKey = BuildConfig.MY_API_KEY,
         )
     }
 
     @Provides
     @Singleton
     fun provideOkHttpClient(
-        authInterceptor: AuthInterceptor
+        authInterceptor: AuthInterceptor,
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
@@ -46,7 +46,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        json: Json
+        json: Json,
     ): Retrofit {
         val contentType = "application/json".toMediaType()
 
@@ -60,7 +60,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providePexelsApi(
-        retrofit: Retrofit
+        retrofit: Retrofit,
     ): PexelsApi =
         retrofit.create(PexelsApi::class.java)
 }

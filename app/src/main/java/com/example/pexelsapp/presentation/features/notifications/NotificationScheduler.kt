@@ -9,18 +9,20 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationScheduler @Inject constructor(
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
 ) {
     fun scheduleDailyReminder() {
         val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
-            24, TimeUnit.HOURS,
-            1, TimeUnit.HOURS
+            REPEAT_INTERVAL_HOURS,
+            TimeUnit.HOURS,
+            FLEX_INTERVAL_HOURS,
+            TimeUnit.HOURS,
         ).build()
 
         workManager.enqueueUniquePeriodicWork(
             REMINDER_WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
+            workRequest,
         )
     }
 
@@ -30,5 +32,7 @@ class NotificationScheduler @Inject constructor(
 
     companion object {
         private const val REMINDER_WORK_NAME = "daily_photo_reminder"
+        private const val REPEAT_INTERVAL_HOURS = 24L
+        private const val FLEX_INTERVAL_HOURS = 1L
     }
 }

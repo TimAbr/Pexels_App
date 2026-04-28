@@ -11,7 +11,7 @@ import dagger.assisted.AssistedInject
 class ReminderWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val notificationManager: AppNotificationManager
+    private val notificationManager: AppNotificationManager,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
