@@ -36,6 +36,9 @@
     <string name="error_canceled">Вход отменен.</string>
     <string name="error_no_credentials">Учетные данные не найдены.</string>
     <string name="error_unknown">Произошла неизвестная ошибка.</string>
+    <string name="error_camera_permission">Разрешение камеры отклонено</string>
+    <string name="error_camera_launch">Не удалось запустить камеру</string>
+
 
     <string name="account">Аккаунт</string>
     <string name="profile_name">Имя</string>
@@ -52,7 +55,6 @@
     <string name="no_description">Описание отсутствует</string>
     <string name="share">Поделиться</string>
 
-    <!-- Notifications -->
     <string name="notification_channel_name">Напоминания</string>
     <string name="notification_channel_description">Ежедневные напоминания о новых фото</string>
     <string-array name="reminder_titles">

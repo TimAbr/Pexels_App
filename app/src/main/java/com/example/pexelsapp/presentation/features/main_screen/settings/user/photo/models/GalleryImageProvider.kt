@@ -18,7 +18,7 @@ class GalleryImageProvider : ImageProvider, LifecycleAware {
         launcher = activity.activityResultRegistry.register(
             KEY,
             activity,
-            ActivityResultContracts.PickVisualMedia()
+            ActivityResultContracts.PickVisualMedia(),
         ) { androidUri ->
 
             val cont = continuation
@@ -32,28 +32,39 @@ class GalleryImageProvider : ImageProvider, LifecycleAware {
     override fun unbind(activity: ComponentActivity) {
         launcher?.unregister()
         launcher = null
+        continuation?.let {
+            if (it.isActive) it.resume(null)
+        }
         continuation = null
     }
 
     override suspend fun getImage(): Uri? = suspendCancellableCoroutine { cont ->
+        continuation?.let {
+            if (it.isActive) {
+                it.resume(null)
+            }
+        }
+        
         continuation = cont
         cont.invokeOnCancellation {
-            continuation = null
+            if (continuation == cont) {
+                continuation = null
+            }
         }
 
         val currentLauncher = launcher
         if (currentLauncher != null && cont.isActive) {
             currentLauncher.launch(
                 PickVisualMediaRequest(
-                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                )
+                    ActivityResultContracts.PickVisualMedia.ImageOnly,
+                ),
             )
         } else if (cont.isActive) {
             cont.resume(null)
         }
     }
 
-    companion object{
+    companion object {
         private const val KEY = "gallery_provider_key"
     }
 }

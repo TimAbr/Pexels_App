@@ -36,6 +36,8 @@
     <string name="error_canceled">Login canceled.</string>
     <string name="error_no_credentials">No credentials found.</string>
     <string name="error_unknown">An unknown error occurred.</string>
+    <string name="error_camera_permission">Camera permission denied</string>
+    <string name="error_camera_launch">Failed to launch camera</string>
 
     <string name="account">Account</string>
     <string name="profile_name">Name</string>
@@ -52,7 +54,6 @@
     <string name="no_description">No description available</string>
     <string name="share">Share</string>
 
-    <!-- Notifications -->
     <string name="notification_channel_name">Reminders</string>
     <string name="notification_channel_description">Daily reminders to check new photos</string>
     <string-array name="reminder_titles">
